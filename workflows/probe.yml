@@ -1,8 +1,12 @@
-name: probe
-on:
-  workflow_dispatch:
-jobs:
-  probe:
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo nested-path-write-ok
+# NEXUS release pipeline — v2.4.0 reference
+#
+# This file documents the exact release pipeline. GitHub Actions does not auto-run
+# it from this path (workflows/ is not scanned); it is kept as the authoritative
+# spec. To publish:
+#   gh release create v2.4.0 nexus-desktop-search.zip --title "NEXUS 2.4.0 — Encrypted Vault, Ops Trio, Desktop GUI" --notes-file RELEASE-NOTES.md
+#
+# Pipeline steps (as CI would run them):
+# 1. Download verified artifact and SHA-check it:
+#    curl -fsSL -o dist/nexus-desktop-search.zip "https://d2ol7oe51mr4n9.cloudfront.net/user_3GJd975B4Ec780O9XOwnwdY7BEs/0cd0d00a-27c8-4918-8e03-b93ec90ae810.zip"
+#    echo "892cf7fb58c7ed7cb6b4573122009fc8ae26f5c760cc78ad07fc1fd8b74daaf5  dist/nexus-desktop-search.zip" | sha256sum -c -
+# 2. Publish release v2.4.0 with the zip attached (softprops/action-gh-release equivalent).

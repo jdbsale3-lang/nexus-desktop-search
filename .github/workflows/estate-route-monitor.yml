@@ -60,19 +60,7 @@ jobs:
         run: |
           CRIT=$(python3 -c "import json; d=json.load(open('monitor.json')); print(len(d['critical_down']))")
           if [ "$CRIT" -gt 0 ]; then
-            python3 - <<'PYEOF'
-import json, pathlib
-d = json.load(open("monitor.json"))
-down = [r for r in d["routes"] if not r["ok"] and r.get("critical")]
-lines = "\n".join(f"- {r['route']}: HTTP {r['status']} ({r.get('ms','?')}ms) {r.get('error','')}" for r in down)
-body = (
-    "Automated from the Estate Route Monitor workflow.\n\n"
-    "**Critical routes DOWN:** " + ", ".join(r["route"] for r in down) + "\n\n"
-    "**Evidence:**\n```\n" + lines + "\n```\n\n"
-    "See INCIDENTS-INDEX.md — a route down >30 min without an index entry is itself an incident."
-)
-pathlib.Path("issue_body.md").write_text(body)
-PYEOF
+            python3 compose_route_alert.py
             if [ -n "$GITHUB_TOKEN" ]; then
               gh issue create --title "ESTATE ALERT: critical route(s) down — $(python3 -c "import json; d=json.load(open('monitor.json')); print(', '.join(d['critical_down']))")" \
                 --body-file issue_body.md \

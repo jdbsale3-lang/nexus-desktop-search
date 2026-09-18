@@ -88,3 +88,35 @@ jobs:
             monitor_out.txt
             issue_body.md
           if-no-files-found: ignore
+
+  # ── FAILURE ALERT: fires when the monitor job itself fails (crash, infra,
+  #    action error — NOT a route-down, which the Alert step handles above). ──
+  monitor-failure-alert:
+    needs: monitor
+    if: ${{ always() && needs.monitor.result == 'failure' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compose failure-body
+        run: python3 compose_failure_alert.py
+
+      - name: File failure issue
+        run: |
+          if [ -n "$GITHUB_TOKEN" ]; then
+            gh issue create \
+              --title "ESTATE ALERT: route-monitor workflow FAILED (run $GITHUB_RUN_ID)" \
+              --body-file issue_body.md \
+              || echo "issue create failed — see artifact"
+          else
+            echo "no GITHUB_TOKEN — failure alert evidence in artifact"
+          fi
+
+      - name: Upload failure alert body
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: monitor-failure-alert
+          path: issue_body.md
+          if-no-files-found: ignore

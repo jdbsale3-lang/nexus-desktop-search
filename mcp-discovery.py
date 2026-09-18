@@ -42,8 +42,19 @@ def main():
     url = sys.argv[1]
     key = sys.argv[2] if len(sys.argv) > 2 else os.environ.get("EXA_KEY", "").strip()
     if not key:
-        import getpass
-        key = getpass.getpass("EXA API key (sk-...): ").strip()
+        # interactive prompt ONLY when a terminal exists; CI (no tty, or
+        # GITHUB_ACTIONS) must fail cleanly with the actionable message —
+        # getpass in a runner crashes with termios/EOFError (seen live).
+        import sys as _sys
+        interactive = _sys.stdin.isatty()
+        if interactive and not os.environ.get("GITHUB_ACTIONS"):
+            import getpass
+            key = getpass.getpass("EXA API key (sk-...): ").strip()
+        else:
+            print("== EXA key not provided and no interactive terminal ==")
+            print("   CI mode: set the EXA_KEY secret (repo → Settings → Secrets → EXA_API_KEY),")
+            print("   or pass the key as argv[2] / EXA_KEY env.")
+            sys.exit(3)
 
     # sanity: Exa API keys are UUID-format (8-4-4-4-12 hex), NOT sk- prefixed.
     # Accept BOTH a UUID and an sk- style key; reject anything else (paste text).

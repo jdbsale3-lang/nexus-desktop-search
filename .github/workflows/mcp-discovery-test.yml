@@ -12,6 +12,12 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
   EXA_KEY: ${{ secrets.EXA_API_KEY }}
 
+# GITHUB_TOKEN scopes — required for the rollback job's gh issue create
+# (without this, issue filing silently skips with "no GITHUB_TOKEN").
+permissions:
+  issues: write
+  contents: read
+
 jobs:
   discovery:
     runs-on: ubuntu-latest

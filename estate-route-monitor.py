@@ -16,6 +16,7 @@ import urllib.request
 # route matrix: name -> (url, critical, expected_ok_code)
 ROUTES = [
     ("flagship",   "https://zeusaiintelligence.com",               True,  200),
+    ("flagship_deploy", "https://zeusaiintelligence.com/",         True,  200),
     ("nexus",      "https://nexus.zeusaiintelligence.com",         True,  200),
     ("reach_skls", "https://zeusaiintelligence.com/reach/skills",  True,  200),
     ("reach_self", "https://zeusaiintelligence.com/reach/self",    True,  200),
@@ -29,13 +30,25 @@ ROUTES = [
     ("outreach",   "https://zeusaiintelligence.com/outreach.html", False, 200),
 ]
 
+# Flagship deploy marker: the theme switcher must be present in the live HTML.
+# If patch-zeus-fixes.py ever gets reverted/overwritten, the marker vanishes
+# and this probe marks flagship_deploy DOWN.
+DEPLOY_MARKER = "zeusThemeSel"
+
 
 def probe(name, url, timeout=20):
     t0 = time.time()
     try:
         req = urllib.request.Request(url, headers={"User-Agent": "ZEUS-RouteMonitor/1.0"})
         with urllib.request.urlopen(req, timeout=timeout) as r:
+            body = r.read().decode("utf-8", "replace")
             dt = round((time.time() - t0) * 1000)
+            # flagship_deploy: the theme-switcher marker must be present in HTML
+            if name == "flagship_deploy":
+                ok = DEPLOY_MARKER in body
+                return {"route": name, "url": url, "status": r.status,
+                        "ok": ok, "ms": dt,
+                        "error": ("deploy marker missing: %s" % DEPLOY_MARKER) if not ok else ""}
             return {"route": name, "url": url, "status": r.status,
                     "ok": 200 <= r.status < 400, "ms": dt}
     except urllib.error.HTTPError as e:

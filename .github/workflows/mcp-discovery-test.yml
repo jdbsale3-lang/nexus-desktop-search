@@ -9,6 +9,7 @@ on:
   workflow_dispatch: {}
 
 env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
   EXA_KEY: ${{ secrets.EXA_API_KEY }}
 
 jobs:

@@ -6,6 +6,11 @@ on:
     - cron: '*/30 * * * *'
   workflow_dispatch: {}
 
+# Node24: runner defaults changed June 16 2026; Node20 removed Sep 23 2026.
+# Force Node24 per GitHub's migration guidance (actions are Node24-capable).
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
 jobs:
   monitor:
     runs-on: ubuntu-latest

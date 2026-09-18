@@ -39,15 +39,7 @@ jobs:
 
       - name: Report status to job summary
         run: |
-          UP=$(python3 -c "import json; d=json.load(open('monitor.json')); print(d['up'])")
-          CRIT=$(python3 -c "import json; d=json.load(open('monitor.json')); print(len(d['critical_down']))")
-          echo "### Estate Route Monitor — $UP up, $CRIT critical down" >> "$GITHUB_STEP_SUMMARY"
-          python3 -c "
-import json
-d = json.load(open('monitor.json'))
-for r in d['routes']:
-    mark = 'OK' if r['ok'] else ('WARN' if not r.get('critical') else 'DOWN')
-    print(f'- [{mark}] {r[\"route\"]}: {r[\"status\"]} {r.get(\"ms\",\"\")}ms')" >> "$GITHUB_STEP_SUMMARY"
+          python3 write_step_summary.py
 
       - name: Gate — fail when critical routes are down
         id: gate

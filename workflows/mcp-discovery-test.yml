@@ -25,7 +25,9 @@ jobs:
           python-version: '3.12'
 
       - name: Install deps
-        run: pip install --quiet mcporter
+        run: |
+          # mcporter is an npm package (not pip) — v0.13.13 verified current
+          npm install -g mcporter@0.13.13
 
       - name: Run MCP discovery probe
         id: probe

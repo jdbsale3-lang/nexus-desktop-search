@@ -1,0 +1,98 @@
+name: Estate Route Monitor
+
+on:
+  schedule:
+    # every 30 minutes — external probes from CI (independent of the droplet)
+    - cron: '*/30 * * * *'
+  workflow_dispatch: {}
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run estate route monitor
+        id: monitor
+        run: |
+          python3 estate-route-monitor.py --json > monitor.json 2>&1 || true
+          python3 estate-route-monitor.py > monitor_out.txt 2>&1 || true
+          cat monitor_out.txt
+
+      - name: Report status to job summary
+        run: |
+          UP=$(python3 -c "import json; d=json.load(open('monitor.json')); print(d['up'])")
+          CRIT=$(python3 -c "import json; d=json.load(open('monitor.json')); print(len(d['critical_down']))")
+          echo "### Estate Route Monitor — $UP up, $CRIT critical down" >> "$GITHUB_STEP_SUMMARY"
+          python3 -c "
+import json
+d = json.load(open('monitor.json'))
+for r in d['routes']:
+    mark = 'OK' if r['ok'] else ('WARN' if not r.get('critical') else 'DOWN')
+    print(f'- [{mark}] {r[\"route\"]}: {r[\"status\"]} {r.get(\"ms\",\"\")}ms')" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Gate — fail when critical routes are down
+        id: gate
+        run: |
+          set -e
+          CRIT=$(python3 -c "import json; d=json.load(open('monitor.json')); print(len(d['critical_down']))")
+          echo "critical down routes: $CRIT"
+          if [ "$CRIT" -gt 0 ]; then
+            echo "::error::ESTATE ROUTES DOWN: $(python3 -c "import json; d=json.load(open('monitor.json')); print(d['critical_down'])")"
+            exit 1
+          fi
+          echo "all critical routes up"
+        continue-on-error: true  # let the alert step run, then fail after
+
+      # ── ALERTING: file a GitHub issue when a critical route is down ──────────
+      - name: Alert — file incident issue on critical failure
+        if: ${{ always() }}
+        run: |
+          CRIT=$(python3 -c "import json; d=json.load(open('monitor.json')); print(len(d['critical_down']))")
+          if [ "$CRIT" -gt 0 ]; then
+            python3 - <<'PYEOF'
+import json, pathlib
+d = json.load(open("monitor.json"))
+down = [r for r in d["routes"] if not r["ok"] and r.get("critical")]
+lines = "\n".join(f"- {r['route']}: HTTP {r['status']} ({r.get('ms','?')}ms) {r.get('error','')}" for r in down)
+body = (
+    "Automated from the Estate Route Monitor workflow.\n\n"
+    "**Critical routes DOWN:** " + ", ".join(r["route"] for r in down) + "\n\n"
+    "**Evidence:**\n```\n" + lines + "\n```\n\n"
+    "See INCIDENTS-INDEX.md — a route down >30 min without an index entry is itself an incident."
+)
+pathlib.Path("issue_body.md").write_text(body)
+PYEOF
+            if [ -n "$GITHUB_TOKEN" ]; then
+              gh issue create --title "ESTATE ALERT: critical route(s) down — $(python3 -c "import json; d=json.load(open('monitor.json')); print(', '.join(d['critical_down']))")" \
+                --body-file issue_body.md \
+                || echo "issue create failed — see artifact"
+            else
+              echo "no GITHUB_TOKEN — alert evidence in artifact"
+            fi
+          else
+            echo "all routes up — no alert"
+          fi
+
+      # ── final gate (authoritative) ───────────────────────────────────────────
+      - name: Gate — fail the run on critical routes down
+        if: steps.gate.outcome == 'failure'
+        run: |
+          echo "::error::Estate route monitor detected critical outage — see the alert issue"
+          exit 1
+
+      - name: Upload monitor report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: estate-route-monitor-report
+          path: |
+            monitor_out.txt
+            issue_body.md
+          if-no-files-found: ignore

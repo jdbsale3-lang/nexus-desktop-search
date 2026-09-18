@@ -1,0 +1,55 @@
+name: CORS Audit
+
+on:
+  schedule:
+    # daily — full CORS preflight + header audit of the AEGIS API
+    - cron: '23 6 * * *'
+  workflow_dispatch: {}
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
+jobs:
+  cors-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Audit CORS (preflight + ACAO header)
+        id: audit
+        run: |
+          python3 cors-audit.py > audit_out.txt 2>&1 || true
+          cat audit_out.txt
+
+      - name: Gate — fail when CORS is broken
+        run: |
+          set -e
+          if grep -q "PASS" audit_out.txt; then
+            echo "CORS audit PASSED"
+          else
+            echo "::error::CORS audit FAILED — INC-005-style issue"
+            exit 1
+          fi
+
+      - name: File issue on failure
+        if: failure()
+        run: |
+          if [ -n "$GITHUB_TOKEN" ]; then
+            gh issue create --title "ESTATE ALERT: CORS audit FAILED (INC-005-style)" \
+              --body "$(cat audit_out.txt)" \
+              || echo "issue create failed"
+          fi
+
+      - name: Upload audit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cors-audit-report
+          path: audit_out.txt
+          if-no-files-found: ignore

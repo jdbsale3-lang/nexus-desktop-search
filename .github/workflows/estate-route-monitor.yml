@@ -18,6 +18,13 @@ jobs:
         with:
           python-version: '3.12'
 
+      # ── THEME SMOKE TEST: flagship theme system must stay intact ────────────
+      - name: Theme smoke test — switcher + 6 palettes + persist engine
+        id: theme
+        run: |
+          set -e
+          python3 theme-smoke-test.py
+
       - name: Run estate route monitor
         id: monitor
         run: |

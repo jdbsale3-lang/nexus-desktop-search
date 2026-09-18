@@ -59,9 +59,13 @@ Job wiring verified on main: `needs: monitor` · `if: always() && needs.monitor.
 - **Root cause (proven):** `apiaegissecurity.tech` (same droplet 188.166.175.149,
   nginx 1.24.0 Ubuntu) answers GET 200 but OPTIONS preflight 400 with no
   `Access-Control-Allow-Origin` — the flagship browser call is blocked.
+- **Re-verified 18 Sep 19:26 UTC:** preflight **still HTTP 400**, ACAO header
+  **absent** — fix NOT yet applied on the droplet. Monitor: `aegis_cors` DOWN.
 - **Fix location:** nginx server block for apiaegissecurity.tech ON THE DROPLET.
 - **Complete guide:** CORS-FIX-GUIDE.md (published) — snippet + reload + verify.
 - **Green condition:** monitor's `aegis_cors` shows OK automatically after the fix.
+- **Incident status:** OPEN (as of last verification). See INCIDENTS-INDEX.md.
+- **Resolution procedure for future incidents:** follow CORS-INCIDENT-RUNBOOK.md.
 
 ## 6. MAINTENANCE NOTES
 

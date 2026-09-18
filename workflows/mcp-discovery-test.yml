@@ -1,0 +1,127 @@
+name: Exa MCP Discovery Test
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    # daily check that the Exa MCP endpoint still exposes tools (names change)
+    - cron: '17 6 * * *'
+  workflow_dispatch: {}
+
+env:
+  EXA_KEY: ${{ secrets.EXA_API_KEY }}
+
+jobs:
+  discovery:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install deps
+        run: pip install --quiet mcporter
+
+      - name: Run MCP discovery probe
+        id: probe
+        run: |
+          python3 mcp-discovery.py https://mcp.exa.ai/mcp "$EXA_KEY" > discovery_out.txt 2>&1 || true
+          cat discovery_out.txt
+
+      - name: Assert tools are exposed
+        id: assert
+        run: |
+          set -e
+          if grep -q "TOOLS EXPOSED: [1-9]" discovery_out.txt; then
+            echo "PASS: Exa MCP exposed tools"
+            grep "CANDIDATE CALL" discovery_out.txt
+          else
+            echo "FAIL: Exa MCP exposed zero tools (auth gate or endpoint change)"
+            cat discovery_out.txt
+            # hard-fail only when a key is set; without a key, report as warning
+            if [ -n "$EXA_KEY" ]; then exit 1; else echo "no key set — informational"; exit 0; fi
+          fi
+
+      - name: Upload discovery output as artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mcp-discovery-report
+          path: discovery_out.txt
+
+  # ── ROLLBACK / RESPONSE JOB — runs whenever the discovery job fails ──────────
+  rollback-on-failure:
+    needs: discovery
+    if: ${{ always() && needs.discovery.result == 'failure' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Re-probe and try to self-heal the tool pin
+        id: heal
+        run: |
+          python3 mcp-discovery.py https://mcp.exa.ai/mcp "$EXA_KEY" > rollback_probe.txt 2>&1 || true
+          cat rollback_probe.txt
+          # if a tool responded this time, pin it as the verified name
+          if grep -q "TOOLS EXPOSED: [1-9]" rollback_probe.txt; then
+            TOOL=$(grep -oP 'CANDIDATE CALL: mcporter call exa \K[^ ]+' rollback_probe.txt || true)
+            if [ -n "$TOOL" ]; then
+              echo "SELF-HEAL: pinning '$TOOL' as verified tool name"
+              echo "$TOOL" > exa.pinned-tool
+              git config user.name "zeus-ci-bot"
+              git config user.email "bot@zeusaiintelligence.com"
+              git add exa.pinned-tool
+              git commit -m "ci: re-pin Exa tool name to $TOOL after discovery failure" || true
+              git push || echo "push failed (no token) — pin saved as artifact"
+            fi
+          else
+            echo "NO_SELF_HEAL" >> rollback_probe.txt
+          fi
+
+      - name: File automated outage issue when endpoint is truly down
+        run: |
+          if grep -q "NO_SELF_HEAL" rollback_probe.txt; then
+            python3 compose_issue_body.py
+            if [ -n "$GITHUB_TOKEN" ]; then
+              gh issue create --title "Exa MCP endpoint unreachable — discovery FAILED" \
+                --body-file issue_body.md \
+                || echo "issue create failed — see artifact"
+            else
+              echo "no GITHUB_TOKEN — issue skipped, evidence in artifact"
+            fi
+          else
+            echo "self-healed — no issue filed"
+          fi
+
+      - name: Upload rollback probe as artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rollback-probe-report
+          path: rollback_probe.txt
+
+      - name: Upload issue body
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rollback-issue-body
+          path: issue_body.md
+          if-no-files-found: ignore
+
+      - name: Upload pinned tool pin
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: exa-tool-pin
+          path: exa.pinned-tool
+          if-no-files-found: ignore

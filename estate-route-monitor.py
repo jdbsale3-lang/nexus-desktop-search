@@ -26,6 +26,7 @@ ROUTES = [
     ("search",     "https://zeusaiintelligence.com/reach/search?q=estate+monitor", True, 200),
     ("docs",       "https://zeusai-intelligence.higgsfield.app",   True,  200),
     ("breach",     "https://aegis-breach-check.higgsfield.app",    True,  200),
+    ("aegis_cors", "https://apiaegissecurity.tech/",               True,  200),
     ("audit",      "https://zeusaiintelligence.com/audit.html",    False, 200),
     ("outreach",   "https://zeusaiintelligence.com/outreach.html", False, 200),
 ]
@@ -34,6 +35,36 @@ ROUTES = [
 # If patch-zeus-fixes.py ever gets reverted/overwritten, the marker vanishes
 # and this probe marks flagship_deploy DOWN.
 DEPLOY_MARKER = "zeusThemeSel"
+
+
+def probe_aegis_cors(name, url, t0):
+    """CORS preflight check for the AEGIS API: an OPTIONS request from the
+    flagship origin must return 2xx AND carry Access-Control-Allow-Origin.
+    Green only when both hold — a plain GET 200 proves nothing (INC-005)."""
+    try:
+        req = urllib.request.Request(url, method="OPTIONS", headers={
+            "Origin": "https://zeusaiintelligence.com",
+            "Access-Control-Request-Method": "GET",
+            "User-Agent": "ZEUS-RouteMonitor/1.0",
+        })
+        with urllib.request.urlopen(req, timeout=20) as r:
+            dt = round((time.time() - t0) * 1000)
+            acao = r.headers.get("Access-Control-Allow-Origin", "")
+            ok = 200 <= r.status < 300 and "zeusaiintelligence.com" in acao
+            return {"route": name, "url": url, "status": r.status, "ms": dt,
+                    "ok": ok,
+                    "acao": acao,
+                    "error": ("CORS preflight failed: status %s, acao=%r" % (r.status, acao)) if not ok else ""}
+    except urllib.error.HTTPError as e:
+        dt = round((time.time() - t0) * 1000)
+        acao = e.headers.get("Access-Control-Allow-Origin", "") if e.headers else ""
+        return {"route": name, "url": url, "status": e.code, "ms": dt, "ok": False,
+                "acao": acao,
+                "error": ("CORS preflight HTTP %s, acao=%r (INC-005 open)" % (e.code, acao))}
+    except Exception as e:
+        dt = round((time.time() - t0) * 1000)
+        return {"route": name, "url": url, "status": None, "ms": dt,
+                "ok": False, "error": str(e)[:140]}
 
 
 def probe(name, url, timeout=20):
@@ -49,6 +80,9 @@ def probe(name, url, timeout=20):
                 return {"route": name, "url": url, "status": r.status,
                         "ok": ok, "ms": dt,
                         "error": ("deploy marker missing: %s" % DEPLOY_MARKER) if not ok else ""}
+            # aegis_cors: preflight must succeed AND carry the allow-origin header
+            if name == "aegis_cors":
+                return probe_aegis_cors(name, url, t0)
             return {"route": name, "url": url, "status": r.status,
                     "ok": 200 <= r.status < 400, "ms": dt}
     except urllib.error.HTTPError as e:

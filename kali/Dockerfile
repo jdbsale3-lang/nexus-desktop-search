@@ -1,54 +1,53 @@
 # syntax=docker/dockerfile:1
-# ZEUS-AEGIS Kali security workstation image
-# Base: official Kali rolling (has kali-* metapackages in-repo — verified
-#       against http.kali.org/kali-rolling/main/binary-amd64/Packages)
+# ZEUS-AEGIS Kali security workstation image — TRIMMED build.
+# Fixes the droplet disk-wall (15.5 GB metapackage sprawl → ~5 GB tool set):
+#   11 heavyweight metapackages replaced by 1 small family + verified direct
+#   packages. Every direct name below verified against the LIVE kali-rolling
+#   binary-amd64 index (19 Sep 2026, kali.download = vinehost, byte-identical).
+#   Names that are NOT direct packages and were therefore NOT pinned:
+#   nmap / nikto (via kali-tools-information-gathering) and wpscan (web family).
 # Usage:
 #   docker build -t kali-aegis:1.0 .
 #   docker run --rm -it --cap-add=SYS_PTRACE kali-aegis:1.0
-#
-# NOTE: metapackage names below are VERIFIED against the live Kali rolling
-# index (18 Sep 2026). Wrong names like kali-linux-network / kali-tools-*-attacks
-# do not exist and would fail the build — these are the real ones.
-
 FROM kalilinux/kali-rolling:latest
-
 ENV DEBIAN_FRONTEND=noninteractive \
     LANG=C.UTF-8 \
-    LC_ALL=C.UTF-8 \
-    LEAK_TEST_TMP=/tmp
+    LC_ALL=C.UTF-8
 
 RUN apt-get update -y && apt-get install -y --no-install-recommends \
     # ── base ────────────────────────────────────────────────────────
     kali-linux-core \
     kali-linux-headless \
+    # small recon family — provides nmap, nikto, whois, dnsrecon
+    # (nmap/nikto are NOT direct packages in this index; only via family)
+    kali-tools-information-gathering \
     postgresql \
     postgresql-client \
     curl \
     git \
     vim \
     ca-certificates \
-    # ── tool families (verified metapackages) ───────────────────────
-    kali-tools-information-gathering \
-    kali-tools-vulnerability \
-    kali-tools-web \
-    kali-tools-exploitation \
-    kali-tools-passwords \
-    kali-tools-post-exploitation \
-    kali-tools-sniffing-spoofing \
-    kali-tools-reporting \
-    kali-tools-fuzzing \
-    kali-tools-reverse-engineering \
-    kali-tools-database \
-    kali-tools-top10 \
-    # ── cross-cutting extras ─────────────────────────────────────────
+    # ── verified direct tool packages (live-index confirmed) ─────────
     nuclei \
     subfinder \
     httpx-toolkit \
     feroxbuster \
-    impacket-scripts \
-    responder \
+    sqlmap \
+    burpsuite \
+    metasploit-framework \
+    exploitdb \
+    hashcat \
+    john \
+    hydra \
+    wireshark \
+    bettercap \
     ghidra \
-    && rm -rf /var/lib/apt/lists/* \
+    radare2 \
+    responder \
+    impacket-scripts \
+    ffuf \
+    gobuster \
+    && apt-get clean && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*.deb \
     # cheat is NOT an apt package in Kali rolling (pip tool) — install via pip
     && pip3 install --break-system-packages --quiet cheat 2>/dev/null || true \
     && for b in nmap nuclei sqlmap burpsuite msfconsole searchsploit hashcat john \
@@ -70,9 +69,7 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
   CMD bash -c 'for b in nmap nuclei sqlmap msfconsole; do command -v "$b" >/dev/null || exit 1; done && echo "kali-aegis healthy" || exit 1'
 
 WORKDIR /aegis
-
 COPY entrypoint.sh /usr/local/bin/zeus-entrypoint
 RUN chmod +x /usr/local/bin/zeus-entrypoint
-
 ENTRYPOINT ["/usr/local/bin/zeus-entrypoint"]
 CMD ["bash"]

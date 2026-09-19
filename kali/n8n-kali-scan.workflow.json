@@ -1,5 +1,5 @@
 {
-  "name": "ZEUS Kali-AEGIS Scan",
+  "name": "ZEUS Kali-AEGIS Scan (6-tool)",
   "nodes": [
     {
       "parameters": {
@@ -16,46 +16,43 @@
     },
     {
       "parameters": {
-        "command": "python3 /aegis/work/kali/kali-scan-hook.py {{ $json.target || 'https://zeusaiintelligence.com' }} --tool {{ $json.tool || 'nuclei' }}"
+        "command": "python3 /aegis/work/kali/kali-scan-hook.py {{ $json.target || 'https://zeusaiintelligence.com' }} --tools {{ $json.tools || 'nuclei,nmap' }}"
       },
       "id": "exec-scan",
-      "name": "Execute Kali scan hook",
+      "name": "Execute Kali scan hook (6-tool)",
       "type": "n8n-nodes-base.executeCommand",
       "typeVersion": 1,
       "position": [550, 300]
     },
     {
       "parameters": {
-        "jsCode": "// Parse the hook's JSON output for n8n\nconst raw = $json.stdout || '{}';\nconst start = raw.indexOf('{');\nconst parsed = JSON.parse(raw.slice(start));\nreturn [{ json: parsed }];",
+        "jsCode": "// Parse hook JSON; surface verdict + findings for downstream nodes\nconst raw = $json.stdout || '{}';\nconst parsed = JSON.parse(raw.slice(raw.indexOf('{')));\nlet findings = [];\n(parsed.results || []).forEach(r => (r.findings || []).forEach(f =>\n  findings.push({ tool: r.tool, line: f })));\nreturn [{ json: { ...parsed, findings_list: findings } }];",
         "options": {}
       },
       "id": "parse-json",
-      "name": "Parse JSON findings",
+      "name": "Parse JSON + flatten findings",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [850, 300]
     },
     {
       "parameters": {
-        "options": {}
+        "options": {
+          "responseData": "allEntries",
+          "responseHeaders": { "entries": [{ "name": "Content-Type", "value": "application/json" }] }
+        }
       },
       "id": "respond",
-      "name": "Respond to Webhook",
+      "name": "Respond to Webhook (JSON)",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
       "position": [1150, 300]
     }
   ],
   "connections": {
-    "trigger-webhook": {
-      "main": [[{ "node": "exec-scan", "type": "main", "index": 0 }]]
-    },
-    "exec-scan": {
-      "main": [[{ "node": "parse-json", "type": "main", "index": 0 }]]
-    },
-    "parse-json": {
-      "main": [[{ "node": "respond", "type": "main", "index": 0 }]]
-    }
+    "trigger-webhook": { "main": [[{ "node": "exec-scan", "type": "main", "index": 0 }]] },
+    "exec-scan": { "main": [[{ "node": "parse-json", "type": "main", "index": 0 }]] },
+    "parse-json": { "main": [[{ "node": "respond", "type": "main", "index": 0 }]] }
   },
   "settings": {},
   "pinData": {}

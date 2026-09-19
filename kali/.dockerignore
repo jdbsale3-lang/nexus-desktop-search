@@ -1,0 +1,11 @@
+# Keep the build context small — only what the image needs
+.git
+*.md
+*.pdf
+*.zip
+generations/
+docs-site/
+estate/
+zeus-skills/
+__pycache__/
+*.pyc

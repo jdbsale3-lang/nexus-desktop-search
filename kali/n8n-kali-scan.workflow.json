@@ -1,0 +1,62 @@
+{
+  "name": "ZEUS Kali-AEGIS Scan",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "kali-scan",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "trigger-webhook",
+      "name": "Webhook (estate trigger)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "command": "python3 /aegis/work/kali/kali-scan-hook.py {{ $json.target || 'https://zeusaiintelligence.com' }} --tool {{ $json.tool || 'nuclei' }}"
+      },
+      "id": "exec-scan",
+      "name": "Execute Kali scan hook",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [550, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse the hook's JSON output for n8n\nconst raw = $json.stdout || '{}';\nconst start = raw.indexOf('{');\nconst parsed = JSON.parse(raw.slice(start));\nreturn [{ json: parsed }];",
+        "options": {}
+      },
+      "id": "parse-json",
+      "name": "Parse JSON findings",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "respond",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1150, 300]
+    }
+  ],
+  "connections": {
+    "trigger-webhook": {
+      "main": [[{ "node": "exec-scan", "type": "main", "index": 0 }]]
+    },
+    "exec-scan": {
+      "main": [[{ "node": "parse-json", "type": "main", "index": 0 }]]
+    },
+    "parse-json": {
+      "main": [[{ "node": "respond", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {},
+  "pinData": {}
+}

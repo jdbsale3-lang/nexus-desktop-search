@@ -1,0 +1,46 @@
+# syntax=docker/dockerfile:1
+# ZEUS-AEGIS Kali — SLIM variant.
+# Same verified package discipline as the full image, but only the families
+# the estate actually exercises: recon, vulnerability, web-app. No exploit,
+# password, sniffing or reverse-engineering bloat → ~60% smaller image.
+#   docker build -f Dockerfile.slim -t kali-aegis-slim:1.0 .
+
+FROM kalilinux/kali-rolling:latest
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    LANG=C.UTF-8 \
+    LC_ALL=C.UTF-8
+
+RUN apt-get update -y && apt-get install -y --no-install-recommends \
+    # base
+    kali-linux-core \
+    kali-linux-headless \
+    curl \
+    git \
+    vim \
+    ca-certificates \
+    # slim tool set (verified metapackages)
+    kali-tools-information-gathering \
+    kali-tools-vulnerability \
+    kali-tools-web \
+    kali-tools-top10 \
+    # extras the estate scans with
+    nuclei \
+    subfinder \
+    httpx-toolkit \
+    feroxbuster \
+    sqlmap \
+    nikto \
+    wpscan \
+    ffuf \
+    gobuster \
+    && rm -rf /var/lib/apt/lists/* \
+    && for b in nmap nuclei sqlmap ffuf gobuster nikto wpscan subfinder httpx; do \
+         command -v "$b" >/dev/null 2>&1 || echo "MISSING: $b"; \
+       done
+
+HEALTHCHECK --interval=60s --timeout=10s --start-period=30s --retries=3 \
+  CMD bash -c 'for b in nmap nuclei sqlmap; do command -v "$b" >/dev/null || exit 1; done && echo "kali-aegis-slim healthy" || exit 1'
+
+WORKDIR /aegis
+CMD ["bash"]

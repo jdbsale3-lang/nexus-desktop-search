@@ -1,0 +1,24 @@
+# ZEUS-AEGIS Kali security workstation — one-command run
+# Usage: docker compose up -d && docker compose exec kali bash
+services:
+  kali:
+    build: .
+    image: kali-aegis:1.0
+    container_name: kali-aegis
+    hostname: kali-aegis
+    cap_add:
+      - SYS_PTRACE        # required by metasploit/gdb-styled tooling
+    security_opt:
+      - seccomp:unconfined
+    working_dir: /aegis
+    volumes:
+      - ../:/aegis/work:ro   # read-only mount of the ZEUS audit workspace
+    networks:
+      - zeus-sec
+    restart: unless-stopped
+    tty: true
+    stdin_open: true
+
+networks:
+  zeus-sec:
+    driver: bridge

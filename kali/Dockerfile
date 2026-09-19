@@ -47,11 +47,11 @@ RUN apt-get update -y && apt-get install -y --no-install-recommends \
     feroxbuster \
     impacket-scripts \
     responder \
-    cheat \
     && rm -rf /var/lib/apt/lists/* \
-    # ── verify the core binaries exist inside the image ─────────────
+    # cheat is NOT an apt package in Kali rolling (pip tool) — install via pip
+    && pip3 install --break-system-packages --quiet cheat 2>/dev/null || true \
     && for b in nmap nuclei sqlmap burpsuite msfconsole searchsploit hashcat john \
-                hydra wireshark bettercap ghidra radare2 responder impacket-psexec; do \
+                hydra wireshark bettercap ghidra radare2 responder impacket-psexec cheat; do \
          if ! command -v "$b" >/dev/null 2>&1; then echo "MISSING: $b"; fi; \
        done
 

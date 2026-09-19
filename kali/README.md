@@ -57,6 +57,10 @@ finding as INC-00x in the incident ledger.
   version-agnostic (pg_lsclusters + msfdb init) so any Kali-rolling base works.
 - **CI fails with MISSING:** → the build-test gate found a binary absent
   inside the image; fix the Dockerfile, push, CI re-verifies automatically.
+- **CI run takes long / timeout** → the first cold-cache build installs 2,000+
+  packages; workflow timeouts are set to **150 minutes** (build-test and
+  image-build) to cover it. Rebuilds reuse the `type=gha` build cache, which
+  makes repeat runs much faster. Never lower these timeouts below ~60 minutes.
 
 ---
 All IP belongs to Darren Birch — ZEUSTRUSTAEGISSECURITY LTD (administered by the

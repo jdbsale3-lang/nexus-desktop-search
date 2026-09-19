@@ -28,7 +28,7 @@ META_PKGS=(
   kali-tools-vulnerability
   kali-tools-web
   kali-tools-exploitation
-  kali-tools-password-attacks
+  kali-tools-passwords
   kali-tools-post-exploitation
   kali-tools-sniffing-spoofing
   kali-tools-reporting
@@ -61,15 +61,15 @@ EXTRA_PKGS=(
   impacket-scripts
   responder
   wfuzz
-  dradis-ce
+  dradis
   pipal
   cutycapt
   ghidra
   radare2
   gdb
   verbose-httpd
-  cheat
 )
+# note: cheat is NOT in Kali apt (pip tool) — install via: pip3 install --break-system-packages cheat
 echo "[4/5] installing extra tools: ${EXTRA_PKGS[*]}"
 apt-get install -y -qq "${EXTRA_PKGS[@]}"
 

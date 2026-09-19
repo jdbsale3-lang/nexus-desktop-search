@@ -47,6 +47,7 @@ RUN apt-get update -y && apt-get install -y --no-install-recommends \
     feroxbuster \
     impacket-scripts \
     responder \
+    ghidra \
     && rm -rf /var/lib/apt/lists/* \
     # cheat is NOT an apt package in Kali rolling (pip tool) — install via pip
     && pip3 install --break-system-packages --quiet cheat 2>/dev/null || true \

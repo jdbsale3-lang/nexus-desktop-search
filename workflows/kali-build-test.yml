@@ -30,6 +30,7 @@ jobs:
           context: ./kali
           file: ./kali/Dockerfile
           push: false
+          load: true
           tags: kali-aegis:test
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -59,6 +60,7 @@ jobs:
           context: ./kali
           file: ./kali/Dockerfile.slim
           push: false
+          load: true
           tags: kali-aegis-slim:test
           cache-from: type=gha
           cache-to: type=gha,mode=max

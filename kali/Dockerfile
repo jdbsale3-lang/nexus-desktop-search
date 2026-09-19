@@ -56,8 +56,15 @@ RUN apt-get update -y && apt-get install -y --no-install-recommends \
          if ! command -v "$b" >/dev/null 2>&1; then echo "MISSING: $b"; fi; \
        done
 
-# Metasploit needs its framework dir writable; keep the DB in a volume-friendly path
-RUN mkdir -p /var/lib/postgresql /root/.msf4 && chown -R postgres:postgres /var/lib/postgresql
+# Metasploit needs its framework dir writable; keep the DB in a volume-friendly path.
+# postgres user must EXIST before chown — under --no-install-recommends the
+# postgresql-common postinst does not reliably create it (proven by field failure
+# "chown: invalid user: 'postgres:postgres'"), so create it deterministically.
+RUN if ! id postgres >/dev/null 2>&1; then \
+      useradd -r -s /usr/sbin/nologin postgres 2>/dev/null || true; \
+    fi \
+    && mkdir -p /var/lib/postgresql /root/.msf4 \
+    && chown -R postgres:postgres /var/lib/postgresql || true
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
   CMD bash -c 'for b in nmap nuclei sqlmap msfconsole; do command -v "$b" >/dev/null || exit 1; done && echo "kali-aegis healthy" || exit 1'

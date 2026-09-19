@@ -4,6 +4,13 @@
 # Version-agnostic: discovers the installed postgres cluster via pg_lsclusters.
 set -euo pipefail
 
+# 0) Ensure the postgres user exists (same deterministic guard as the Dockerfile
+#    build step). Under --no-install-recommends the postgresql-common postinst
+#    does not reliably create it — without this, runuser below fails at runtime.
+if ! id postgres >/dev/null 2>&1; then
+  useradd -r -s /usr/sbin/nologin postgres 2>/dev/null || true
+fi
+
 # 1) PostgreSQL: start the default cluster if present (Debian/Kali uses
 #    pg_ctlcluster; falls back to pg_ctl on the discovered data dir).
 if command -v pg_lsclusters >/dev/null 2>&1; then

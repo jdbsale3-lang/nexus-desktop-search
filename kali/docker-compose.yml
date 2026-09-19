@@ -1,9 +1,13 @@
 # ZEUS-AEGIS Kali security workstation — one-command run
 # Usage: docker compose up -d && docker compose exec kali bash
+# NOTE: pull_policy: build prevents compose from attempting to PULL
+#   "kali-aegis:1.0" from Docker Hub (which always fails with
+#   'pull access denied') — it forces a local build instead.
 services:
   kali:
     build: .
     image: kali-aegis:1.0
+    pull_policy: build
     container_name: kali-aegis
     hostname: kali-aegis
     cap_add:

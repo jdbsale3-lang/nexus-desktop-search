@@ -52,7 +52,17 @@ def main():
     if "zEUS-CORS-FIX" in text:
         print("  already patched — verifying only")
     else:
-        backup = f"{target}.bak-inc005"
+        # backups MUST live OUTSIDE sites-enabled: nginx includes every file
+        # there regardless of extension (field-caught: .bak-inc005 inside
+        # sites-enabled caused "duplicate listen options for [::]:443").
+        backup_dir = Path("/root/nginx-backups")
+        backup_dir.mkdir(parents=True, exist_ok=True)
+        stale = Path(f"{target}.bak-inc005")
+        if stale.exists():
+            # older buggy-version leftovers: move them out of sites-enabled
+            shutil.move(str(stale), backup_dir / stale.name)
+            print(f"  moved stale sites-enabled backup -> {backup_dir / stale.name}")
+        backup = backup_dir / f"{target.name}.bak-inc005"
         shutil.copy(target, backup)
         print(f"backup: {backup}")
         marker = "\n# zEUS-CORS-FIX (INC-005)\n" + DIRECTIVES
@@ -71,7 +81,7 @@ def main():
     print(t.stdout.strip() or t.stderr.strip())
     if t.returncode != 0:
         print("!! nginx -t FAILED — restoring backup")
-        shutil.copy(f"{target}.bak-inc005", target)
+        shutil.copy(str(backup), target)
         return 1
     r = run("systemctl reload nginx 2>&1")
     print("  nginx reloaded (or said:", r.stderr.strip()[:80], ")")

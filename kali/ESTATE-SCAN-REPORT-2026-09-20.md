@@ -26,7 +26,8 @@ No service-level vulnerabilities were identified. Exposure posture:
 | Security-header gaps | 5 (all fixable in one nginx pass) |
 | Critical / High | 0 |
 | Edge protection | Cloudflare (filtered ports, HTTP/3, cf-ray) |
-| Overall | REVIEW → CLEAN after header hardening |
+| Overall (current) | REVIEW — 21 findings |
+| **Target outcome** | **CLEAN after header hardening** (fix ships this kit; not yet applied) |
 
 ## 2. Key Findings
 

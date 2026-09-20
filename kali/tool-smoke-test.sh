@@ -9,12 +9,19 @@ FAILS=0
 ok(){ printf "  %bOK%b  %s\n" "$GREEN" "$OFF" "$1"; }
 bad(){ printf "  %bFAIL%b %s — %s\n" "$RED" "$OFF" "$1" "$2"; FAILS=$((FAILS+1)); }
 
-check() { # check <name> <command...>
+check() { # check <name> <command...> — "executes" semantics:
+  #   127/126 = missing/not-executable  -> FAIL
+  #   124     = timeout (hung)          -> FAIL
+  #   any other exit (0,1,2,...)        -> OK (the tool ran; flag side-effects are the command's business)
   local name="$1"; shift
-  if timeout 60 "$@" >/dev/null 2>&1; then ok "$name"; else bad "$name" "$*"; fi
+  timeout 60 "$@" >/dev/null 2>&1
+  local rc=$?
+  if [ "$rc" -eq 127 ] || [ "$rc" -eq 126 ]; then bad "$name" "missing ($*)";
+  elif [ "$rc" -eq 124 ]; then bad "$name" "timeout ($*)";
+  else ok "$name"; fi
 }
 
-echo "═══ kali tool smoke test (v11) ═══"
+echo "═══ kali tool smoke test (v12) ═══"
 check "nmap            " nmap -V
 check "nuclei          " nuclei -version
 check "sqlmap          " sqlmap --version

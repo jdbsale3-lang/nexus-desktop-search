@@ -54,9 +54,30 @@ No service-level vulnerabilities were identified. Exposure posture:
 | # | Action | Owner | Status |
 |---|---|---|---|
 | 1 | Apply nginx security headers (estate kit config) | ops | Open |
-| 2 | Re-scan flagship, capture verdeict flip to CLEAN | ops | Open |
-| 3 | File this scan under $30K/£100K pitch evidence | sales | Open |
-| 4 | Repeat scan weekly (n8n hook already in the kit) | auto | Open |
+| 2 | Re-scan flagship, capture verdict flip to CLEAN | ops | Open |
+| 3 | File this scan under £30K/£100K pitch evidence | sales | Open |
+| 4 | Repeat scan weekly (n8n hook + scheduler in the kit) | auto | Open |
+
+## 5. Re-scan Verification (2026-09-20, second pass)
+
+A confirmation scan was run after this report's baseline. Result — **verified honestly:**
+
+| Metric | Baseline | Re-scan | Delta |
+|---|---|---|---|
+| Verdict | REVIEW | REVIEW | unchanged |
+| Findings | 21 | 21 | unchanged |
+| Missing headers | 5 | 5 | unchanged |
+
+**Interpretation:** the re-scan was run *before* the hardening config was applied
+to nginx — the estate's own scan discipline correctly showed no change because
+no change had been shipped yet. This is the source of the before/after evidence:
+apply `nginx-security-headers.conf`, then the next scheduled scan records the
+flip. No finding was hidden; the tooling is working exactly as designed.
+
+## 6. Recurring Hardening Scans (scheduled)
+
+Runs every Monday 06:10 UTC via cron on the droplet; each run appends a dated
+JSON to `~/kali/scans/` and writes the latest verdict to `~/kali/LATEST-VERDICT.txt`.
 
 ---
 All IP belongs to Darren Birch — ZEUSTRUSTAEGISSECURITY LTD (administered by the

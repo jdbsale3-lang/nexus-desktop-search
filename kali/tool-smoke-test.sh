@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # tool-smoke-test.sh — RUNS INSIDE the kali-aegis container.
-# Proves each tool actually executes (not just exists). Run: docker exec -it kali-aegis bash /aegis/work/kali/tool-smoke-test.sh
-# (the kit is mounted read-only at /aegis/work via docker-compose)
+# Proves each tool actually executes (not just exists) with VERIFIED flags
+# (v11: fixed searchsploit/john/gobuster/httpx flags + 60s first-boot timeout).
+# Run: docker exec -it kali-aegis bash /aegis/work/kali/tool-smoke-test.sh
 set -uo pipefail
 GREEN=$'\e[32m'; RED=$'\e[31m'; OFF=$'\e[0m'
 FAILS=0
@@ -10,18 +11,18 @@ bad(){ printf "  %bFAIL%b %s — %s\n" "$RED" "$OFF" "$1" "$2"; FAILS=$((FAILS+1
 
 check() { # check <name> <command...>
   local name="$1"; shift
-  if timeout 20 "$@" >/dev/null 2>&1; then ok "$name"; else bad "$name" "$*"; fi
+  if timeout 60 "$@" >/dev/null 2>&1; then ok "$name"; else bad "$name" "$*"; fi
 }
 
-echo "═══ kali tool smoke test ═══"
+echo "═══ kali tool smoke test (v11) ═══"
 check "nmap            " nmap -V
 check "nuclei          " nuclei -version
 check "sqlmap          " sqlmap --version
 check "burpsuite       " burpsuite --version
 check "msfconsole      " msfconsole -v
-check "searchsploit    " searchsploit --version
+check "searchsploit    " searchsploit apache
 check "hashcat         " hashcat --version
-check "john            " john --version
+check "john            " john --list=build-info
 check "hydra           " hydra -h
 check "wireshark       " wireshark --version
 check "bettercap       " bettercap -version
@@ -31,11 +32,11 @@ check "responder       " responder -h
 check "impacket-psexec " impacket-psexec -h
 check "cheat           " cheat -v
 check "ffuf            " ffuf -V
-check "gobuster        " gobuster version
+check "gobuster        " gobuster -h
 check "nikto           " nikto -Version
 check "wpscan          " wpscan --version
 check "subfinder       " subfinder -version
-check "httpx           " httpx -version
+check "httpx           " httpx -h
 echo "────────────────────────────────"
-if [ "$FAILS" -eq 0 ]; then echo "  ALL TOOLS EXECUTE"; else echo "  $FAILS tool(s) failed to execute"; fi
+if [ "$FAILS" -eq 0 ]; then echo "  ALL TOOLS EXECUTE — 22/22 verified"; else echo "  $FAILS tool(s) failed"; fi
 exit $([ "$FAILS" -eq 0 ] && echo 0 || echo 1)

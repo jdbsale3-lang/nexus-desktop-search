@@ -12,6 +12,8 @@ services:
     hostname: kali-aegis
     cap_add:
       - SYS_PTRACE        # required by metasploit/gdb-styled tooling
+      - NET_RAW           # required by nmap raw-socket scans inside the container
+      - NET_ADMIN         # advanced scans (arp/spoofing tools)
     security_opt:
       - seccomp:unconfined
     working_dir: /aegis

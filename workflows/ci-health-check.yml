@@ -1,0 +1,73 @@
+name: CI Health Check
+
+on:
+  schedule:
+    - cron: '17 */6 * * *'      # 06:17, 12:17, 18:17, 00:17 UTC — every 6 hours
+  workflow_dispatch: {}
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Probe estate surfaces (live, external)
+        run: |
+          set -u
+          FAILED=""
+          for u in \
+            https://zeusaiintelligence.com \
+            https://nexus.zeusaiintelligence.com \
+            https://aegis-breach-check.higgsfield.app \
+            https://zeusai-intelligence.higgsfield.app; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 20 "$u")
+            echo "  $code $u"
+            [ "$code" = "200" ] || FAILED="$FAILED $u($code)"
+          done
+          # security headers on the flagship (hardening must stay live)
+          hdrs=$(curl -sI --max-time 20 https://zeusaiintelligence.com | grep -icE "strict-transport|content-security|x-content-type")
+          echo "  security headers: $hdrs/3"
+          [ "$hdrs" -ge 3 ] || FAILED="$FAILED headers($hdrs)"
+          echo "FAILED=$FAILED" >> "$GITHUB_ENV"
+
+      - name: Check estate reach (monitor + skills healthy)
+        run: |
+          set -u
+          FAILED="${FAILED:-}"
+          mon=$(curl -s --max-time 20 https://zeusaiintelligence.com/reach/monitor)
+          skills=$(curl -s --max-time 20 https://zeusaiintelligence.com/reach/self | grep -o '"skills_loaded": *[0-9]*' | head -1)
+          echo "  monitor: $mon"
+          echo "  skills: $skills"
+          echo "$mon" | grep -q '"alerts": *\[\]' || FAILED="$FAILED monitor-alerts"
+          [ -n "$skills" ] || FAILED="$FAILED reach-self"
+          echo "FAILED=$FAILED" >> "$GITHUB_ENV"
+
+      - name: Fail loudly on any estate check
+        if: env.FAILED != ''
+        run: |
+          echo "::error::ESTATE HEALTH CHECK FAILED:$FAILED"
+          exit 1
+
+      - name: Open/refresh a GitHub issue when the estate is unhealthy
+        if: failure() && (env.FAILED != '')
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = `🚨 Estate health check FAILED — ${new Date().toISOString()}`;
+            const body = `Detected by scheduled CI Health Check (every 6h).\n\`\`\`\n${process.env.FAILED}\n\`\`\`\nEstate surfaces and/or ZEUS reach returned non-green. Check the route monitor and the last deployment.`;
+            const { data } = await github.rest.issues.listForRepo({ owner, repo, state: 'open' });
+            const open = data.find(i => i.title.includes('Estate health check FAILED'));
+            if (open) {
+              await github.rest.issues.update({ owner, repo, issue_number: open.number, body });
+              console.log(`updated issue #${open.number}`);
+            } else {
+              await github.rest.issues.create({ owner, repo, title, body });
+              console.log('opened new issue');
+            }
+            process.exit(0);

@@ -23,7 +23,7 @@ MAX_STEPS = 6
 MAX_DEEP_STEPS = 10
 
 
-def exa_search(query, n=5):
+def exa_search(query, n=5, attempt=0):
     body = json.dumps({"query": query, "numResults": n, "type": "auto",
                        "contents": {"text": {"max_characters": 2500}}}).encode()
     req = urllib.request.Request("https://api.exa.ai/search", data=body,
@@ -32,8 +32,47 @@ def exa_search(query, n=5):
         with urllib.request.urlopen(req, timeout=25) as r:
             d = json.loads(r.read().decode())
             return d.get("results", [])
+    except urllib.error.HTTPError as e:
+        if e.code in (429, 500, 502, 503) and attempt < 3:
+            import time as _t
+            _t.sleep(5 * (attempt + 1))   # 5s, 10s, 15s backoff
+            return exa_search(query, n=n, attempt=attempt + 1)
+        # final failure -> fallback to DuckDuckGo HTML (no API key, estate allowlisted)
+        return ddg_fallback(query, n)
+    except urllib.error.URLError as e:
+        return ddg_fallback(query, n)
     except Exception as e:
         return [{"error": str(e)}]
+
+
+def ddg_fallback(query, n=5):
+    """DuckDuckGo HTML search fallback — best-effort, CONDITIONAL.
+    NOTE (2026-09-21): both html. and lite. endpoints returned anti-bot anomaly
+    pages from the estate sandbox at verify time — this lane is wired but NOT
+    verified operational. Exa (with retry/backoff + error visibility) remains
+    the verified primary. Do not rely on this fallback until re-verified from
+    an environment DDG does not challenge."""
+    import html as _html
+    import re as _re
+    q = urllib.parse.quote(query)
+    req = urllib.request.Request(f"https://html.duckduckgo.com/html/?q={q}",
+                                 headers={"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) ZEUS-research"})
+    try:
+        with urllib.request.urlopen(req, timeout=20) as r:
+            page = r.read().decode(errors="replace")
+        out = []
+        for m in _re.finditer(r'<a rel="nofollow" class="result__a" href="([^"]+)"[^>]*>(.*?)</a>', page):
+            url = _html.unescape(m.group(1))
+            title = _re.sub(r"<[^>]+>", "", m.group(2)).strip()
+            if "uddg=" in url:
+                import urllib.parse as _up
+                url = _up.unquote(_up.parse_qs(_up.urlparse(url).query).get("uddg", [url])[0])
+            out.append({"title": title, "url": url, "text": ""})
+            if len(out) >= n:
+                break
+        return out or [{"error": "ddg: no results"}]
+    except Exception as e:
+        return [{"error": f"ddg fail: {e}"}]
 
 
 def read_page(url):
@@ -73,8 +112,14 @@ def research(question, deep=False):
 
     for step in range(1, budget + 1):
         hits = exa_search(q)
-        trace.append({"step": step, "query": q, "hits": len([h for h in hits if "title" in h])})
-        if not hits or "error" in hits[0] or not any("title" in h for h in hits):
+        err = hits[0].get("error") if hits and "error" in hits[0] else None
+        trace.append({"step": step, "query": q,
+                      "hits": len([h for h in hits if "title" in h]),
+                      **({"error": err} if err else {})})
+        if err:
+            trace[-1]["note"] = f"backend error: {err} — ending loop"
+            break
+        if not hits or not any("title" in h for h in hits):
             trace[-1]["note"] = "backend returned nothing usable — ending loop"
             break
 

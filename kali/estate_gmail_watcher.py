@@ -35,6 +35,12 @@ CRITICAL = [
     "zeustrust", "zeustrustaegissecurity", "jdb sales", "jdbsale3",
     "stackblitz", "bolt.new", "netlify", "vercel", "digitalocean", "godaddy", "namecheap",
     "aws", "azure", "google cloud", "slack", "notion", "twilio",
+    # utilities / pensions / safety (v3.1 additions)
+    "ofgem", "water", "british gas", "edf energy", "eon",
+    "pension", "nest pensions", "hargreaves", "vanguard",
+    "dbs", "safeguarding", "data breach", "cyber insurance",
+    "principal", "aviva", "legalgeneral", "axa",
+    "apple.com/bill", "google.com/payments", "microsoft account",
 ]
 QUERY = " in:trash (" + " OR ".join(f'from:"{d}"' for d in CRITICAL) + \
         " OR " + " OR ".join(f'"{t}"' for t in CRITICAL) + ")"

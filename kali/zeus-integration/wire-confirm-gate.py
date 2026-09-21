@@ -49,24 +49,31 @@ def main():
         print("  confirm gate already wired — verify only")
         return 0
 
-    # anchor: the function that dispatches handler commands (best-effort markers)
-    anchor_toks = ["main()", "def handler", "def dispatch", "def route", "def execute", "def handle"]
+    # anchor: layered fallback — any top-level def, __main__ guard, or last import
+    anchor_toks = ["def main(", "def handler(", "def dispatch(", "def route(", "def execute(", "def handle(", "if __name__", "def ", "import ", "from "]
     idx = -1
+    used = None
+    # prefer more specific anchors but never anchor INSIDE another def's body
     for tok in anchor_toks:
         i = src.find(tok)
         if i != -1:
+            # only accept column-0 (module scope) anchors for broad tokens
+            line_start = src.rfind("\n", 0, i) + 1
+            col = i - line_start
+            if tok in ("def ", "import ", "from ", "if __name__"):
+                if col != 0:
+                    continue
             idx = i
+            used = tok
             break
     if idx == -1:
-        print("!! no dispatch/handler anchor found — manual placement per CONFIRM-GATE-GLOBAL.md")
+        print("!! no anchor found — manual placement per CONFIRM-GATE-GLOBAL.md")
         return 3
 
     shutil.copy(TARGET, BAK)
-    # insert the gate right before the anchor line, at same indentation
+    # insert the gate BEFORE the anchor line, at column 0 always (module scope)
     line_start = src.rfind("\n", 0, idx) + 1
-    indent = src[line_start : line_start + len(src[line_start:]) - len(src[line_start:].lstrip())]
-    snippet = "\n".join((indent + l) if l.strip() else l for l in SNIPPET.strip("\n").splitlines())
-    snippet = "\n" + snippet + "\n"
+    snippet = "\n" + SNIPPET.strip("\n") + "\n\n"
     src = src[:line_start] + snippet + src[line_start:]
 
     # sanity compile

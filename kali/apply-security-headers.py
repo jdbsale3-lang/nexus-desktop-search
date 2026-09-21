@@ -62,13 +62,25 @@ def main():
         shutil.copy(target, backup)
 
         idx = text.find(HOST)
-        # find the server_name directive's end; insert the headers right after it
-        sn_end = text.find("\n", text.rfind("server_name", 0, idx))
-        if sn_end == -1:
-            print(f"!! could not anchor server_name in {target.name} — manual edit")
-            return 1
+        # Robust anchor: locate the server block that mentions HOST, then the
+        # first server_name INSIDE that block (field fix — old anchor used a
+        # blind rfind which missed multi-block / split-SSL layouts).
+        block_start = text.rfind("server {", 0, idx)
+        next_block = text.find("server {", idx)
+        seg_end = next_block if next_block != -1 else len(text)
+        sn_start = text.find("server_name", block_start, seg_end)
+        if sn_start == -1:
+            # no server_name in the block — insert right after the block brace
+            insert_at = text.find("{", block_start) + 1
+            if insert_at <= block_start:
+                print(f"!! could not anchor a server block in {target.name} — manual edit")
+                return 1
+        else:
+            insert_at = text.find("\n", sn_start) + 1
+            if insert_at <= sn_start:
+                insert_at = seg_end
         block = f"\n{marker}\n" + HEADERS
-        text = text[: sn_end + 1] + block + text[sn_end + 1:]
+        text = text[:insert_at] + block + text[insert_at:]
         target.write_text(text, encoding="utf-8")
         print(f"  {target.name}: headers inserted (backup {backup})")
 

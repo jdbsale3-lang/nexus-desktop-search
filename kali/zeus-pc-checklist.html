@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZEUS Estate — PC Security Setup Checklist</title>
+<style>
+  :root { --bg:#041220; --card:#0a1d33; --text:#F7F5F2; --muted:#8A8B8E; --accent:#C9674A; --ok:#51b749; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text); font-family:Inter,system-ui,sans-serif; min-height:100vh; }
+  .wrap { max-width:780px; margin:0 auto; padding:3rem 1.25rem 5rem; }
+  h1 { font-size:1.9rem; margin-bottom:.4rem; }
+  .sub { color:var(--muted); margin-bottom:1.6rem; }
+  .progress { height:10px; background:#12304f; border-radius:6px; overflow:hidden; margin:1.4rem 0 2rem; }
+  .progress-fill { height:100%; width:0%; background:var(--ok); transition:width .4s ease; }
+  .meter { color:var(--muted); font-size:.85rem; margin-top:.3rem; }
+  .part { background:var(--card); border:1px solid #16344f; border-radius:12px; padding:1.3rem 1.4rem; margin-bottom:1.4rem; }
+  .part h2 { font-size:1.1rem; color:var(--accent); margin-bottom:.9rem; }
+  label.item { display:flex; gap:.8rem; align-items:flex-start; padding:.55rem .2rem; cursor:pointer; border-radius:8px; transition:background .15s; }
+  label.item:hover { background:#12304f; }
+  label.item input { margin-top:.25rem; width:18px; height:18px; accent-color:var(--ok); }
+  label.item.done .txt { text-decoration:line-through; color:var(--muted); }
+  .item-note { color:var(--muted); font-size:.82rem; margin-top:.1rem; }
+  .badge { display:inline-block; background:var(--accent); color:#fff; border-radius:999px; font-size:.7rem; padding:.15rem .6rem; margin-left:.4rem; vertical-align:middle; }
+  .final { text-align:center; padding:1.2rem; border-radius:12px; background:var(--ok); color:#041220; font-weight:700; display:none; }
+  .final.show { display:block; }
+  button.reset { margin-top:2rem; background:transparent; border:1px solid var(--muted); color:var(--muted); padding:.5rem 1.2rem; border-radius:8px; cursor:pointer; }
+  button.reset:hover { border-color:var(--text); color:var(--text); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>ZEUS Estate — PC Security Setup</h1>
+  <p class="sub">Interactive checklist · progress saves automatically · complete all three parts for full 24/7 protection</p>
+
+  <div class="progress"><div class="progress-fill" id="fill"></div></div>
+  <div class="meter" id="meter">0 / 0 tasks done — 0%</div>
+
+  <div class="part">
+    <h2>Part A — Mullvad VPN (24/7 protection) <span class="badge">REQUIRED</span></h2>
+    <label class="item"><input type="checkbox" id="a1"><div><div class="txt">Install Mullvad VPN (run the downloaded .exe)</div></div></label>
+    <label class="item"><input type="checkbox" id="a2"><div><div class="txt">Activate with your 16-digit account number</div><div class="item-note">The number IS the login — save it. No email needed.</div></div></label>
+    <label class="item"><input type="checkbox" id="a3"><div><div class="txt">Auto-connect on startup: ON</div><div class="item-note">This is what makes it 24/7.</div></div></label>
+    <label class="item"><input type="checkbox" id="a4"><div><div class="txt">Connect to a location (UK recommended)</div></div></label>
+    <label class="item"><input type="checkbox" id="a5"><div><div class="txt">Verify at mullvad.net/en/check — green "You are protected"</div><div class="item-note">IP shown must NOT be your home IP.</div></div></label>
+    <label class="item"><input type="checkbox" id="a6"><div><div class="txt">Leave Mullvad running when the PC is on</div></div></label>
+  </div>
+
+  <div class="part">
+    <h2>Part B — Mullvad Browser <span class="badge">Recommended</span></h2>
+    <label class="item"><input type="checkbox" id="b1"><div><div class="txt">Download Mullvad Browser for Windows</div><div class="item-note">mullvad.net/en/browser, or VPN app → Settings → Mullvad Browser → Install.</div></div></label>
+    <label class="item"><input type="checkbox" id="b2"><div><div class="txt">Install and launch Mullvad Browser</div></div></label>
+    <label class="item"><input type="checkbox" id="b3"><div><div class="txt">Use it WITH Mullvad VPN on</div></div></label>
+  </div>
+
+  <div class="part">
+    <h2>Part C — Twitter cookies for the ZEUS estate agent <span class="badge">Estate link</span></h2>
+    <label class="item"><input type="checkbox" id="c1"><div><div class="txt">Log into x.com (in Mullvad Browser)</div></div></label>
+    <label class="item"><input type="checkbox" id="c2"><div><div class="txt">F12 → Application → Cookies → x.com</div></div></label>
+    <label class="item"><input type="checkbox" id="c3"><div><div class="txt">Copy auth_token value AND ct0 value</div></div></label>
+    <label class="item"><input type="checkbox" id="c4"><div><div class="txt">On droplet: agent-reach configure twitter-cookies → paste BOTH space-separated</div></div></label>
+    <label class="item"><input type="checkbox" id="c5"><div><div class="txt">Verify doctor shows twitter "status": "ok"</div></div></label>
+  </div>
+
+  <div class="part">
+    <h2>Part D — Estate verification</h2>
+    <label class="item"><input type="checkbox" id="d1"><div><div class="txt">On droplet: bash ~/kali/droplet-autorun.sh (no FAILED lines)</div></div></label>
+    <label class="item"><input type="checkbox" id="d2"><div><div class="txt">Confirm estate probe: all 11 checks green</div></div></label>
+  </div>
+
+  <div class="final" id="final">🎉 ALL SETUP COMPLETE — your PC is protected and linked to ZEUS. All IP belongs to Darren Birch — ZEUSTRUSTAEGISSECURITY LTD.</div>
+  <button class="reset" onclick="resetAll()">Reset checklist</button>
+</div>
+
+<script>
+(function(){
+  var ids = ['a1','a2','a3','a4','a5','a6','b1','b2','b3','c1','c2','c3','c4','c5','d1','d2'];
+  var labels = {};
+  ids.forEach(id => { var el = document.getElementById(id); labels[id] = el.parentElement; });
+  function save(){ ids.forEach(id => localStorage.setItem('zeus-'+id, document.getElementById(id).checked?'1':'0')); }
+  function load(){ ids.forEach(id => { var v = localStorage.getItem('zeus-'+id)==='1'; document.getElementById(id).checked=v; labels[id].classList.toggle('done',v); }); }
+  function update(){
+    var done = ids.filter(id => document.getElementById(id).checked).length;
+    var pct = Math.round(done / ids.length * 100);
+    document.getElementById('fill').style.width = pct + '%';
+    document.getElementById('meter').textContent = done + ' / ' + ids.length + ' tasks done — ' + pct + '%';
+    document.getElementById('final').classList.toggle('show', done === ids.length);
+  }
+  ids.forEach(id => { document.getElementById(id).addEventListener('change', function(){
+    labels[id].classList.toggle('done', this.checked); save(); update();
+  }); });
+  window.resetAll = function(){ if(!confirm('Reset all checkboxes?')) return; ids.forEach(id => { document.getElementById(id).checked=false; labels[id].classList.remove('done'); }); localStorage.clear(); update(); };
+  load(); update();
+})();
+</script>
+</body>
+</html>

@@ -30,9 +30,23 @@
 
 Snaps shine for **desktop GUI apps needing auto-update** (browsers, editors, media apps) and for Canonical-maintained app distribution on stock Ubuntu. On a Kali security workstation serving the estate, none of that applies.
 
+## 3b. Bonus comparator: Flatpak
+
+| Criterion | Flatpak | .deb | Verdict for ZEUS |
+|---|---|---|---|
+| Vendor | Freedesktop/Flathub (community) | Debian/Kali | .deb — Flatpak is community-curated, no formal security SLA |
+| Sandbox | Bubblewrap confinement, portal-based | native | .deb — sandbox blocks raw-socket tooling |
+| Runtime model | Bundled runtimes per app (big) | shared libs | .deb — droplet disk matters |
+| Update control | Explicit (flatpak update) | explicit (apt) | tie |
+| Kali compatibility | Some apps on Flathub; no Kali-native security tools | everything | .deb absolutely |
+| Speed | LAN/runtime indirection | native | .deb |
+| GUI desktop apps | strong (GNOME/KDE ecosystem) | also strong | tie — but irrelevant for headless estate |
+
+**Flatpak verdict:** same conclusion as snaps — a fine desktop-app format (Firefox, editors) for a workstation with spare disk, **wrong choice for Kali-AEGIS** where raw sockets, native speed, and Debian/Kali signature trust rule. No flatpak in the estate; single-source apt stands.
+
 ## 4. Recommendation — ZEUS Kali-AEGIS
 
-**Stay 100% Debian-native (.deb / apt). Do not install snapd on the droplet or in the image.**
+**Stay 100% Debian-native (.deb / apt). Do not install snapd or flatpak on the droplet or in the image.**
 
 Rationale, in one line: every estate requirement — controlled upgrades, raw-socket tools, small disk, offline-safety, Kali ecosystem identity — is satisfied by .deb and contradicted by snaps. The build, CI, and toolset are all scenario-tested on .deb already (22/22 tools verified). Introducing snaps would add a second package manager, auto-update risk, and confinement friction for zero estate gain.
 

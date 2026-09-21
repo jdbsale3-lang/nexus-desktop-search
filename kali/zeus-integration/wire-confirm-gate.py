@@ -19,7 +19,8 @@ from pathlib import Path
 TARGET = "/opt/agent-reach-bridge.py"   # adjust if your bridge lives elsewhere
 BAK = TARGET + ".bak-confirm-gate"
 
-IRREVERSIBLE = ["incident_create", "quote_builder", "post", "send", "delete", "transfer", "pay"]
+IRREVERSIBLE = ["incident_create", "incident_resolve", "quote_builder", "post", "send",
+                "delete", "transfer", "pay", "deploy", "rebuild", "configure"]
 
 SNIPPET = '''
 # === zEUS-CONFIRM-GATE (global) ===

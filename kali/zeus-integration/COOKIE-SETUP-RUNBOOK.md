@@ -59,5 +59,30 @@ for k,v in d.get('doctor',{}).items():
 Expected: github **ok** · exa_search **ok** · twitter **ok** · linkedin **ok** ·
 xueqiu **ok** (after the four setups + the doctor-verify-fix for github/exa).
 
+## 5. Cookie verification — confirm each export actually works (not just pasted)
+
+**Twitter:** after `agent-reach configure twitter-cookies`, verify the channel
+returns real data (not just "config written"):
+```bash
+curl -s https://zeusaiintelligence.com/reach/doctor | grep -A3 '"twitter"' | grep -o '"status": "[a-z]*"'
+# PASS = "ok"; FAIL = still "warn" → re-export cookies while logged in at x.com
+```
+
+**LinkedIn:** after starting `mcporter run linkedin-mcp &`, give it 5 seconds,
+then:
+```bash
+sleep 5 && curl -s https://zeusaiintelligence.com/reach/doctor | grep -A3 '"linkedin"' | grep -o '"status": "[a-z]*"'
+```
+
+**Xueqiu:** after `agent-reach configure xueqiu-cookies`, the HTTP 400 should
+become 200 — verify:
+```bash
+curl -s https://zeusaiintelligence.com/reach/doctor | grep -A3 '"xueqiu"' | grep -o '"status": "[a-z]*"'
+```
+
+**Rule:** a cookie "configured" is not a cookie "working" — the Doctor's status
+field is the only receipt. Re-export from a freshly logged-in browser tab if a
+channel still reports warn after pasting.
+
 ---
 All IP belongs to Darren Birch — ZEUSTRUSTAEGISSECURITY LTD (administered by the Darren & Jill Birch Trust).

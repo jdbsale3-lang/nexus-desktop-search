@@ -31,8 +31,11 @@
 | Tide | £0 | bank |
 | ICO | £52/yr | regulatory |
 
-## TWILIO — COST PENDING (connector auth invalid — needs dashboard read)
-- Twilio connector returns authentication error (invalid credentials stored) — exact cost requires console.twilio.com → Billing read by owner. Expected <£5/mo (incident-invoked voice calls only). Paste the number to lock it in.
+## TWILIO — COST LOGGED (22 Sep, owner console read)
+- **TRIAL account** (`zeusaiintellegence.com`) — **£0 paid to date**
+- **Trial balance remaining: £9.90966** · Phone +441616961542 · SID AC54f32d…
+- Restriction: trial = verified recipients only; upgrade (pay-as-you-go) needed for open use — not required yet
+- Connector auth stale (invalid creds) — reconnect in connectors UI with a fresh API key if live reads are wanted
 
 ## AUDIT (22 Sep) — remaining active subscriptions in last 30 days: NONE beyond tracker
 - Sweep of receipts/invoices/payment emails: only Stripe account notices + ICO confirmation. No unknown subscriptions found.

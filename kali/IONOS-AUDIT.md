@@ -1,5 +1,5 @@
 # IONOS ACCOUNT AUDIT — Customer 316502159 (Darren Birch)
-**Date:** 2026-09-21 · **Status:** INVOICE DISPUTE / ORDERLY EXIT IN PROGRESS
+**Date:** 2026-09-22 · **Status:** DISPUTE FILED / CANCELLATIONS DONE / TRANSFER IN MOTION
 **Rule applied:** nothing cancelled blind — the flagship domain must be protected first.
 
 ---
@@ -52,7 +52,7 @@
 - [ ] Invoice downloaded + itemised verified
 - [ ] Typo domains cancelled (4)
 - [ ] Domain Guard packages cancelled
-- [ ] Dispute filed (typo registrations not authorised)
+- [x] Dispute emailed to IONOS Support (22 Sep, msg 1a0c8dbf3bdcbfac)
 - [ ] Flagship transfer to Cloudflare Registrar initiated
 - [ ] Account closed / balance settled
 

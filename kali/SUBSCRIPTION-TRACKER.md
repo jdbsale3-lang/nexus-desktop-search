@@ -4,11 +4,11 @@
 ## RED — cancelling / cancelled this week
 | Provider | Cost | Card | Status | Confirmation |
 |---|---|---|---|---|
-| Cursor | £18.64/mo | *7342 | CANCELLED — email sent 22 Sep | id `1a0c8eea4eaa1139` |
+| Cursor | £18.64/mo | *7342 | ✅ CANCELLED — CONFIRMED by Sam (Cursor) 22 Sep: no refund (invoice unpaid), no further charges | msg `1a0c8eea4eaa1139` + reply 11:48 |
 | X Premium | £8.00/mo | *7342 | CANCELLED — email sent 22 Sep | id `1a0c8ef30d87f4bc` |
-| Bolt.new/StackBlitz | US$25/mo | *8306 | CANCELLED — email sent 22 Sep | (bolt to stackblitz) |
+| Bolt.new/StackBlitz | US$25/mo | *8306 | ✅ CANCELLED — CONFIRMED by Julio (Bolt) 22 Sep: renewal disabled; Pro active to 18 Oct then free, no further charges | reply 11:47 |
 | DEEMOS | £23.30/mo | *7342 | ✅ **CANCELLED** by owner 22 Sep | — |
-| ClickUp | unknown tier | — | VERIFY — cancel if paid | app.clickup.com → Settings → Billing |
+| ClickUp | free tier (evidence) | — | CANCELLATION EMAIL SENT 22 Sep (id `1a0c90f9aa5533df`) — awaiting reply | free-tier belief; reply confirms plan |
 
 ## YELLOW — in motion
 | Provider | Cost | Status | Next |
@@ -30,6 +30,12 @@
 | Anthropic | usage | API work |
 | Tide | £0 | bank |
 | ICO | £52/yr | regulatory |
+
+## TWILIO — COST PENDING (connector auth invalid — needs dashboard read)
+- Twilio connector returns authentication error (invalid credentials stored) — exact cost requires console.twilio.com → Billing read by owner. Expected <£5/mo (incident-invoked voice calls only). Paste the number to lock it in.
+
+## AUDIT (22 Sep) — remaining active subscriptions in last 30 days: NONE beyond tracker
+- Sweep of receipts/invoices/payment emails: only Stripe account notices + ICO confirmation. No unknown subscriptions found.
 
 ## SAVINGS SO FAR THIS WEEK
 - **~£50/mo + US$25/mo** in subscriptions cancelled (Cursor + X Premium + Bolt) — ≈ **£850/yr**

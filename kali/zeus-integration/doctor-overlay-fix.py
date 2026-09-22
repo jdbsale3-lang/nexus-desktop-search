@@ -1,29 +1,27 @@
 #!/usr/bin/env python3
-"""doctor-overlay-fix.py — make /reach/doctor report the NO-WRITE probe truth.
+"""doctor-overlay-fix.py v2 — CORRECTED to the REAL doctor structure.
 
-The doctor statuses come from the `agent-reach doctor --json` CLI, which
-deliberately refuses side-effecting checks (gh auth status writes a device-id;
-it won't start the mcporter service). We proved github + exa work via read-only
-probes (HTTP 200). This patch overlays those probe results onto the doctor's
-channel map so the wire shows ok where ok is provable.
+PROVEN FROM THE LIVE WIRE: /reach/doctor returns {"ok":true,"doctor":{
+"github":{...},"exa_search":{...}, ...}} — channels live DIRECTLY under
+`doctor`, NOT under a "channels" key. v1 looked for doctor["channels"], so the
+overlay silently did nothing (exactly what the droplet showed: overlay WIRED,
+wire still warn).
 
-Patch mechanics (same discipline as the other fixers):
-  - anchor: the doctor() function's `return json.loads(out)` line
-  - before it: inject _doctor_probe_overlay() at module scope
-  - replace the return to pass through the overlay
-  - compile-verified; restores backup on any syntax failure
+v2 handles BOTH shapes (direct keys, and a nested "channels" dict if present),
+so it is correct for this bridge and future-proof.
 
-Usage (droplet): python3 doctor-overlay-fix.py
+Usage (droplet): python3 doctor-overlay-fix.py   (idempotent)
 """
 import shutil
-import sys
 from pathlib import Path
 
 TARGET = "/opt/agent-reach-bridge.py"
 BAK = TARGET + ".bak-doctor-overlay"
 
 OVERLAY = '''
-# === ZEUS-DOCTOR-OVERLAY (no-write truth on /reach/doctor) ===
+# === ZEUS-DOCTOR-OVERLAY v2 (no-write truth on /reach/doctor) ===
+# Live structure: {"ok":true,"doctor":{"github":{...},"exa_search":{...}}}
+# Channels are DIRECT keys under doctor (no "channels" wrapper).
 import json as _json
 import os as _os
 import urllib.request as _ur
@@ -50,17 +48,20 @@ def _probe_exa_key():
             return r.status
     except Exception:
         return None
+def _overlay_channels(chmap):
+    if not isinstance(chmap, dict):
+        return
+    g = _probe_github_token()
+    if g == 200:
+        chmap["github"] = {"status": "ok", "via": "no-write probe (HTTP 200)"}
+    e = _probe_exa_key()
+    if e == 200:
+        chmap["exa_search"] = {"status": "ok", "via": "no-write probe (HTTP 200)"}
 def _doctor_probe_overlay(d):
     if not isinstance(d, dict):
         return d
-    ch = d.get("channels")
-    if isinstance(ch, dict):
-        g = _probe_github_token()
-        if g == 200:
-            ch["github"] = {"status": "ok", "via": "no-write probe (HTTP 200)"}
-        e = _probe_exa_key()
-        if e == 200:
-            ch["exa_search"] = {"status": "ok", "via": "no-write probe (HTTP 200)"}
+    _overlay_channels(d)                 # v2: channels are direct keys (live shape)
+    _overlay_channels(d.get("channels")) # future-proof: nested shape too
     return d
 '''
 
@@ -68,43 +69,50 @@ def _doctor_probe_overlay(d):
 def main():
     p = Path(TARGET)
     if not p.exists():
-        print(f"!! {TARGET} not found — set TARGET to your bridge path")
-        return 1
+        print(f"!! {TARGET} not found"); return 1
     src = p.read_text(encoding="utf-8", errors="replace")
-    if "ZEUS-DOCTOR-OVERLAY" in src:
-        print("  overlay already wired — verify only")
+
+    # upgrade an existing v1 overlay in place
+    if "ZEUS-DOCTOR-OVERLAY v2" in src:
+        print("  overlay v2 already wired — verify only")
         compile(src, TARGET, "exec")
+        return 0
+    if "ZEUS-DOCTOR-OVERLAY" in src:
+        print("  v1 overlay found — upgrading to v2 (structure-correct)")
+        # replace the v1 block: from the marker to the end of _doctor_probe_overlay
+        start = src.find("# === ZEUS-DOCTOR-OVERLAY")
+        end = src.find("def doctor():")
+        if start == -1 or end == -1 or end < start:
+            print("!! could not locate v1 block bounds"); return 4
+        shutil.copy(TARGET, BAK)
+        src = src[:start] + OVERLAY.strip("\n") + "\n\n" + src[end:]
+        try:
+            compile(src, TARGET, "exec")
+        except SyntaxError as e:
+            shutil.copy(BAK, TARGET)
+            print(f"!! syntax error ({e}) — restored"); return 5
+        p.write_text(src, encoding="utf-8")
+        print(f"  OVERLAY UPGRADED to v2 (backup {BAK})")
         return 0
 
     anchor = "            return json.loads(out)"
     i = src.find(anchor)
     if i == -1:
-        print("!! doctor() return anchor not found — cannot overlay")
-        return 3
-
-    shutil.copy(TARGET, BAK)
-
-    # 1) inject overlay helpers BEFORE the doctor() function
-    #    (anchor on 'def doctor():')
+        print("!! doctor() return anchor not found"); return 3
     d = src.find("def doctor():")
     if d == -1:
-        shutil.copy(BAK, TARGET)
-        print("!! def doctor() not found — restored backup")
-        return 4
+        print("!! def doctor() not found"); return 6
+
+    shutil.copy(TARGET, BAK)
     src = src[:d] + OVERLAY.strip("\n") + "\n\n" + src[d:]
-
-    # 2) route doctor()'s success return through the overlay
     src = src.replace(anchor, "            return _doctor_probe_overlay(json.loads(out))", 1)
-
     try:
         compile(src, TARGET, "exec")
     except SyntaxError as e:
         shutil.copy(BAK, TARGET)
-        print(f"!! produced invalid syntax ({e}) — restored backup, nothing applied")
-        return 5
-
+        print(f"!! syntax error ({e}) — restored"); return 5
     p.write_text(src, encoding="utf-8")
-    print(f"  DOCTOR OVERLAY WIRED into {TARGET} (backup {BAK})")
+    print(f"  DOCTOR OVERLAY v2 WIRED (backup {BAK})")
     return 0
 
 

@@ -1,0 +1,50 @@
+name: Post-Deploy Health Gate
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run the estate health gate
+        id: gate
+        run: |
+          chmod +x kali/estate-health.sh
+          set +e
+          bash kali/estate-health.sh | tee /tmp/health.txt
+          echo "rc=$?" >> "$GITHUB_OUTPUT"
+        continue-on-error: true
+
+      - name: Show the report
+        run: cat /tmp/health.txt
+
+      - name: Open an issue if the gate failed
+        if: ${{ steps.gate.outputs.rc != '0' }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const body = fs.readFileSync('/tmp/health.txt', 'utf8').slice(0, 4000);
+            const { data: existing } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo, state: 'open', per_page: 30
+            });
+            if (!existing.some(i => i.title.startsWith('[HEALTH] POST-DEPLOY FAIL'))) {
+              await github.rest.issues.create({
+                owner: context.repo.owner, repo: context.repo.repo,
+                title: '[HEALTH] POST-DEPLOY FAIL — estate health gate returned non-zero',
+                body: 'The post-deploy health gate failed on push ' + context.sha.slice(0,7) + '.\n\n```\n' + body + '\n```\n\nFix the failing line(s), re-run, then close this issue.'
+              });
+            }
+
+      - name: Fail the job if the gate failed
+        if: ${{ steps.gate.outputs.rc != '0' }}
+        run: exit 1

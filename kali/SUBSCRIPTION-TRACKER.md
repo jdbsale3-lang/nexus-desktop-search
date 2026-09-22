@@ -40,6 +40,10 @@
 ## AUDIT (22 Sep) — remaining active subscriptions in last 30 days: NONE beyond tracker
 - Sweep of receipts/invoices/payment emails: only Stripe account notices + ICO confirmation. No unknown subscriptions found.
 
+## TWILIO (savings tracker row)
+| Twilio | SMS/voice alerts | **£0** — trial balance £9.91 remaining (TRIAL account `zeusaiintellegence.com`, phone +441616961542) | No charge while trial credit lasts — upgrade only if usage grows |
+| Twilio Auth Token | security | **ROTATE** — token appeared on a shared screenshot 22 Sep | Console → Settings → API keys & tokens → rotate; 2 min |
+
 ## SAVINGS SO FAR THIS WEEK
 - **~£50/mo + US$25/mo** in subscriptions cancelled (Cursor + X Premium + Bolt) — ≈ **£850/yr**
 - **DEEMOS £23.30/mo — CANCELLED 22 Sep** ≈ **£280/yr** recovered

@@ -15,7 +15,7 @@ If count > 0 -> ALERT: restore immediately (gmail-modify-labels TRASH removal).
 import datetime
 import json
 
-# v3 — extended anchors: anything that must NOT silently vanish.
+# v4 — extended anchors: anything that must NOT silently vanish (incl. Higgsfield complaint replies)
 CRITICAL = [
     # regulator / registration
     "ico.org.uk", "informationcommissioner",
@@ -35,6 +35,8 @@ CRITICAL = [
     "zeustrust", "zeustrustaegissecurity", "jdb sales", "jdbsale3",
     "stackblitz", "bolt.new", "netlify", "vercel", "digitalocean", "godaddy", "namecheap",
     "ionos", "1&1", "1and1", "ionos.co.uk", "ionos.com",
+    # Higgsfield platform (complaint/remedy replies must never be missed)
+    "higgsfield.ai", "higgsfield support", "remedy",
     "aws", "azure", "google cloud", "slack", "notion", "twilio",
     # utilities / pensions / safety (v3.1 additions)
     "ofgem", "water", "british gas", "edf energy", "eon",
@@ -50,7 +52,7 @@ QUERY = " in:trash (" + " OR ".join(f'from:"{d}"' for d in CRITICAL) + \
 def check():
     return {
         "kind": "gmail-trash-watch",
-        "version": 3,
+        "version": 4,
         "checked_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(),
         "query": QUERY,
         "note": "Run connector gmail-find-email with this query; any result = ALERT + restore.",

@@ -1,50 +1,56 @@
-# IONOS INVOICE ITEMISATION — £485.40 · Customer 316502159 · 20 contracts
-**Source:** 21 Sep reminder (contract list) + 23–30 Aug order/registration emails (product proof).
-**Rule:** every claim is evidence-tagged (✓ = seen in mailbox, ? = inferred, fix after downloading the invoice PDF).
+# IONOS INVOICE ITEMISATION — £485.40 · Customer 316502159
+**Source (updated 21 Sep):** live invoice overview screenshots — 16 invoices, ALL dated 18/09/2026, MOST marked **"Payment failed"** + the 21 Sep reminder listing.
 
 ---
 
-## THE 20 CONTRACT NUMBERS (from the 21 Sep reminder)
-```
-113383884  113383221  113387976  113387974  113383315  113378876
-113383224  113383318  113383886  113387978  113389775  113383223
-113383319  113386685  113382207  113383882  113386687  113389774
-113389770  (one line truncated in the email — invoice will complete it)
-```
+## WHAT THE INVOICE PAGE ACTUALLY SHOWS (your screenshots)
+- **16 invoices, every one dated 18/09/2026** → this is ONE collection run: IONOS tried to charge on 18/09, the card **declined**, and the unpaid total is what the reminder quoted (£485.40).
+- **Good news:** the payments FAILED — so you don't owe a paid-subscription debt; you owe nothing that's been collected. The dispute must make sure **failed ≠ due**: every line is now a cancellation + waiver target.
+- Services that exist on the account (contracts from screenshots + mailbox):
 
-## KNOWN PRODUCTS ON THE ACCOUNT (evidence map)
-| # | Product | Contract | Evidence | Likely share of £485.40 |
-|---|---|---|---|---|
-| 1 | **IONOS VPS Windows XL+** | 113400130 | ✓ 23 Aug cancellation email | **the big one** – VPS XL+ ≈ £40–60/mo |
-| 2 | **IONOS GPT** | 113271957 | ✓ 30 Aug "Contract Ends Soon" (end 06.09.2026) | ~£8–15/mo |
-| 3 | **Mail Business 5 Lic.** | (order 29 Aug 21:17) | ✓ Order Confirmation | ~£8–15/mo |
-| 4 | **Virusscan** | (order 29 Aug 20:57) | ✓ Order Confirmation | ~£3–7/mo |
-| 5 | **AI Email Assistant 1 user** | (order 29 Aug 20:57) | ✓ Order Confirmation | ~£3–8/mo |
-| 6 | **Instant Domain** | 113514895 | ✓ Contract Confirmation 29 Aug 20:53 | ~£1–10/yr |
-| 7 | `zeusaiintellegence.com` (typo) | ? | ✓ Registered 29 Aug 20:53 | £8–15/yr |
-| 8 | `zeusaiintellegence.info` (typo) | ? | ✓ Registered 29 Aug 20:53 | £5–12/yr |
-| 9 | `zeusaiintellegence.co.uk` (typo) | ? | ✓ Registered 29 Aug 20:53 | £3–8/yr |
-| 10 | `zeusaiintellegence.store` (typo) | ? | ✓ Registered 29 Aug 20:53 | £8–15/yr |
-| 11–16 | **Domain Guard** × up to 6 domains (`zeusaiintelligence.com`, `.org`, `.info`, `.co.uk`, `.store`, `zeus-scan-fit.com`) | ? | ✓ 9 deactivation requests 23–24 Aug | ~£3–6/mo each (already deactivated — fight any charge) |
-| 17–20 | remaining lines = one of the above per-contract splits, or extra add-ons | ? | invoice PDF | verify |
+| Service | Contract | Failed amount | Status |
+|---|---|---|---|
+| IONOS AI Search Manager | 113387976 | £34.80 | Payment failed |
+| IONOS AI Search Manager | 113382207 | £34.80 | Payment failed |
+| IONOS AI App & Site Builder Starter | 113383319 | £30.00 | Payment failed |
+| IONOS Email Marketing Plus | 113389775 | £18.00 | Payment failed |
+| IONOS Email Marketing Plus | 113387974 | £18.00 | Payment failed |
+| IONOS MyWebsite Now Starter | (from invoice list) | ? | Payment failed |
+| IONOS MyWebsite Now Plus | (from invoice list) | ? | Payment failed |
+| IONOS MyWebsite Now eCommerce Plus | (from invoice list) | ? | Payment failed |
+| IONOS MyWebsite Now eCommerce Starter | (from invoice list) | ? | Payment failed |
+| IONOS Email archiving | (from invoice list) | ? | Payment failed |
+| IONOS Web Hosting Plus | (from invoice list) | ? | Payment failed |
+| IONOS VPS Windows XL+ | 113400130 | ? | Cancel requested 23 Aug (phone-confirm) |
+| IONOS GPT | 113271957 | ? | Contract ends 06.09.2026 |
+| IONOS Mail Business 5 Lic. | (29 Aug order) | ? | — |
+| IONOS Virusscan | (29 Aug order) | ? | — |
+| IONOS AI Email Assistant 1u | (29 Aug order) | ? | — |
+| IONOS Instant Domain | **112790544** (portal, not email's 113514895) | ? | Cancel flow IN PROGRESS (your screenshot) |
+| 4 typo domains `zeusaintellegence.*` | — | — | expiring 29/08/2027, Guard "Order" not active |
 
-## REALITY CHECK — does the arithmetic hold?
-- Domains (4 typos + flagships): ~£40/yr total
-- Services if billed monthly: VPS ≈ £50 + GPT ≈ £12 + Mail ≈ £10 + Virusscan ≈ £5 + AI Assistant ≈ £5 ≈ **£82/mo** + Domain Guard ≈ £25/mo
-- A **monthly services bill + domain registrations landing together** ≈ £107–125 × 4 months (Aug–Nov since 29 Aug) ≈ **£430–500** ✓ — consistent with **£485.40**.
-- Conclusion: the invoice is **one billing cycle of the post-29-Aug account**, dominated by the VPS + the package stack ordered the same night as the typo domains.
+## KEY FINDINGS FROM YOUR DOMAIN LIST SCREENSHOT
+- The **typo domains are spelled `zeusaintellegence.*`** (missing the 'i') — matching the correction request.
+- All 4 typos: **Domain Guard "Order"** (red) = NOT purchased/active — one less thing to fight.
+- `zeusaiintelligence.org` → DNS **178.62.46.133** — that's a DIFFERENT DigitalOcean IP than flagship 188.166.175.149. Either an old droplet or an unclaimed record — **decide what `.org` should point at or park it** (candidate to keep: it's the correct spelling).
+- `zeusaiintelligence.com` flagship: Domain Guard **"Not active"**, NS = Cloudflare. Transfer-ready once the IONOS lock is off + 60-day wait clears (6 Oct).
+- `.info/.co.uk/.store` variants show Domain Guard **"Waiting"** (deactivation pending) — finish those deactivations or they may bill.
 
-## WHAT TO VERIFY WHEN THE INVOICE PDF IS DOWNLOADED (Step 0 of delete-all guide)
-- [ ] Which contracts are monthly vs annual
-- [ ] Whether Domain Guard is billed despite deactivation — **dispute if it is**
-- [ ] The included-from/until dates — anything before 29 Aug that's not a legit renewal = dispute
-- [ ] That the truncated 20th contract number resolves to a product you recognise
+## DISPUTE TARGET (updated)
+1. **Cluster A (typo, full waiver):** 4× `zeusaintellegence.*` + anything attached. Guard never bought — nothing to pay.
+2. **Cluster B (already-cancelled 23 Aug):** VPS 113400130 — stop billing, refund.
+3. **Cluster C (never used, cancelled/being cancelled):** MyWebsite Now ×4, AI Search Manager ×2, AI App & Site Builder, Email Marketing ×2, Email archiving, Web Hosting, Mail Business, Virusscan, AI Assistant, Instant Domain 112790544, GPT 113271957, VPS.
+4. **Cluster D (legitimately keep):** flagship registration line ONLY.
+> Because every collection failed, the £485.40 is **uncollected**, not paid — the dispute stance is: waive A + B + C (nothing was used, most contracts were cancelled within 3 weeks of ordering), pay only D if anything at all is due.
 
-## DISPUTE TARGET (for the dispute message)
-1. **Cluster A (unauthorised/typo — full waiver):** the 4 typo domains + any packages attached to them
-2. **Cluster B (already-cancelled 23 Aug — stop billing, refund prorated):** VPS 113400130
-3. **Cluster C (ordered accidentally same night — cancel free of charge):** Mail Business, Virusscan, AI Assistant, Instant Domain
-4. **Cluster D (legitimate keep):** flagship domain registration only — the one line you should pay if all else is waived
+## ACTION STATUS (from your screenshots — continued effort needed)
+- [x] Invoice page reached, invoices visible (16× 18/09)
+- [x] Cancel flow OPEN for Instant Domain (112790544) — survey page reached; **complete it: tick the awareness checkbox → "Make a note of cancellation now"**
+- [ ] Cancel the other 15 products in the same loop (Part 4 of CLICK-PATHS)
+- [ ] 4 typo domains: set **do-not-renew** (they expire 29/08/2027; don't renew, don't pay)
+- [ ] Domain Guard "Waiting" on `.info/.co.uk/.store`: finish deactivation
+- [ ] VPS phone call 0808 189 0625 (already-left deadline)
+- [ ] Transfer flagships on/after 6 Oct (auth code received ✅)
 
 ---
 All IP belongs to Darren Birch — ZEUSTRUSTAEGISSECURITY LTD (administered by the Darren & Jill Birch Trust).

@@ -1,6 +1,11 @@
 # DOMAIN TRANSFER CHECKLIST — zeusaiintelligence.com → Cloudflare Registrar
 **Owner action list — every box must be ticked before the transfer is considered done.**
-Version 1.0 · updated 22 Sep 2026
+Version 1.1 · updated 22 Sep 2026 — typo domains verified GONE, transfer watch verified scheduled
+
+## VERIFIED THIS SESSION (22 Sep)
+- [x] **Typo domains confirmed gone from registries** — zeusaintellegence.com/.info/.store → RDAP 404; zeusaintellegence.co.uk → NXDOMAIN. No auto-renewal possible, no cost. (Your cancellations deleted them.)
+- [x] **Transfer Watch scheduled + active** — workflow id 364145068, cron `23 */6 * * *`, GitHub-registered. Run #1 failure was the pre-fix YAML (0 jobs = parse error); fixed in c9b3778/6fb1360; first green run due 14:23 UTC.
+- [ ] **SLACK_WEBHOOK_URL secret** — needs your hand (token lacks Secrets permission): repo Settings → Secrets and variables → Actions → New repository secret → `SLACK_WEBHOOK_URL` → paste webhook from droplet `/opt/zeus-reach.env` (or Slack admin). Workflow skips Slack gracefully until set — GitHub issue remains the alert.
 
 ## PHASE 0 — IONOS PREP
 - [x] Auth code requested (IONOS → Renewal & transfer → Request authorisation code) — code captured

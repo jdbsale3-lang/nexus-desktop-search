@@ -1,0 +1,18 @@
+provider,role,cost,billing,frequency,status,cancel_path,next_action
+DEEMOS,unknown dev tool,£23.30,Mastercard *7342,monthly,CANCELLING,failed-payments+acct_1OVTgmEX0ZvbLD9q@stripe.com | portal https://billing.stripe.com/p/login/bIY14V3G,Cancel via Stripe customer portal (Manage subscriptions -> cancel)
+Cursor,AI code editor,£18.64,Mastercard *7342,monthly,CANCELLED,hi@cursor.com,confirmation email awaited (sent 22 Sep msg 1a0c8eea4eaa1139)
+X Premium,social verification,£8.00,Mastercard *7342,monthly,CANCELLED,paidfeatures@x.com,confirmation email awaited (sent 22 Sep msg 1a0c8ef30d87f4bc)
+Bolt.new/StackBlitz,web builder,US$25.00,card *8306,monthly,CANCELLED,hello@stackblitz.com,confirmation email awaited (sent 22 Sep)
+ClickUp,project mgmt,daily summaries only,tier unknown,?,VERIFY,notifications@clickup.com,check plan tier in account - cancel if paid
+Exa,research/search API,$10 top-up,card *8258,usage,PAID,exa.ai/contact billing@exa.ai,KEEP - verified research spine
+Twilio,SMS/voice alerts (CALL_MODE voice +441616961542),number rental ~$1.15 + usage,per-dashboard,usage,KEEP,none (usage-based) - account zeusaiintellegencecom,no invoice emails in 12mo - check console billing
+IONOS,registrar+hosting (being exited),£485.40 disputed - uncollected,failed collection,monthly,EXITING,dispute sent 22 Sep msg 1a0c8dbf3bdcbfac,minimum-term reply received - follow-up needed
+DigitalOcean,compute droplet aegis-api,£10-20 (est),bill monthly,monthly,KEEP,dashboard,no action
+Cloudflare,DNS/CDN/SSL/registrar,£0 + $10.46/yr post-transfer,free tier,annual,KEEP,dashboard,transfer completes after 06 Oct
+GitHub,repo + CI + watchdogs,£0,free tier,monthly,KEEP,dashboard,no action
+Gmail/Google,mailbox + watcher,£0,free,monthly,KEEP,none,no action
+Higgsfield,AI platform + connectors,credits (pay-per-gen),platform,usage,KEEP,dashboard,no action (unlimited plans do not apply in-chat)
+Slack,alerts channel,£0,free,monthly,KEEP,workspace,no action
+Anthropic API,Claude API usage,usage-based,usage,usage,KEEP,none,no action
+Tide,business bank,£0,free,monthly,KEEP,none,no action
+ICO,data protection fee,£52/yr,PAID,annual,KEEP,none,renew 2027

@@ -1,6 +1,12 @@
 # WALKTHROUGH — Transfer zeusaiintelligence.com to Cloudflare Registrar
 Verified 21 Sep 2026 against Cloudflare's official transfer docs + IONOS help. Allow ~30 min active, ~5–10 days total.
 
+## LIVE STATUS (checked 22 Sep 2026 from droplet RDAP)
+- registrar: **IONOS SE** (transfer NOT done)
+- status: **`client transfer prohibited`** (IONOS lock still ON)
+- last registry change: **2026-08-24** — nothing moved since
+- → PRESS 1 (unlock at IONOS) must happen before PRESS 2 (enter code at Cloudflare)
+
 ---
 
 ## BEFORE YOU START — check these (all confirmed except 1 and 2)

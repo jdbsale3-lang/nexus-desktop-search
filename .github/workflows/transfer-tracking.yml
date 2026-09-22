@@ -2,7 +2,6 @@ name: Domain Transfer Watch
 
 on:
   schedule:
-    # every 6h at :23 — offset from the estate CI health check (:17)
     - cron: '23 */6 * * *'
   workflow_dispatch: {}
 
@@ -16,33 +15,27 @@ jobs:
     steps:
       - name: Probe .com registry (Verisign RDAP)
         id: rdap
+        shell: bash
         run: |
-          JSON="$(curl -s --max-time 30 https://rdap.verisign.com/com/v1/domain/zeusaiintelligence.com)"
-          echo "$JSON" > /tmp/rdap.json
-          REG="$(echo "$JSON" | python3 -c "
-import json,sys
-try:
-    j=json.load(sys.stdin)
-    regs=[e for e in j.get('entities',[]) if 'registrar' in e.get('roles',[])]
-    for e in regs:
-        v=e.get('vcardArray',[[]])[1]
-        for item in v:
-            if item[0]=='fn': print(item[3]); break
-except Exception: print('UNRESOLVED')
-" | head -1)"
-          LOCK="$(echo "$JSON" | python3 -c "
-import json,sys
-try:
-    j=json.load(sys.stdin)
-    print('client transfer prohibited' in j.get('status',[]))
-except Exception: print('unknown')
-" | head -1)"
-          echo "registrar=$REG" >> "$GITHUB_OUTPUT"
-          echo "locked=$LOCK" >> "$GITHUB_OUTPUT"
+          curl -s --max-time 30 https://rdap.verisign.com/com/v1/domain/zeusaiintelligence.com -o /tmp/rdap.json
+          python3 - <<'PY'
+          import json
+          import os
+          j = json.load(open('/tmp/rdap.json'))
+          reg = ''
+          for e in j.get('entities', []):
+              if 'registrar' in e.get('roles', []):
+                  for item in e.get('vcardArray', [[], []])[1]:
+                      if item[0] == 'fn':
+                          reg = item[3]
+          locked = 'client transfer prohibited' in j.get('status', [])
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              f.write('registrar=' + (reg or 'UNRESOLVED') + '\n')
+              f.write('locked=' + str(locked) + '\n')
+          PY
 
       - name: Report status
-        run: |
-          echo "::notice::registrar=${{ steps.rdap.outputs.registrar }} | transfer lock=${{ steps.rdap.outputs.locked }}"
+        run: echo "::notice::registrar=${{ steps.rdap.outputs.registrar }} | transfer lock=${{ steps.rdap.outputs.locked }}"
 
       - name: Open issue when the registrar flips to Cloudflare
         if: ${{ steps.rdap.outputs.registrar != 'IONOS SE' && steps.rdap.outputs.registrar != 'UNRESOLVED' && steps.rdap.outputs.registrar != '' }}

@@ -7,7 +7,7 @@
 | Cursor | £18.64/mo | *7342 | CANCELLED — email sent 22 Sep | id `1a0c8eea4eaa1139` |
 | X Premium | £8.00/mo | *7342 | CANCELLED — email sent 22 Sep | id `1a0c8ef30d87f4bc` |
 | Bolt.new/StackBlitz | US$25/mo | *8306 | CANCELLED — email sent 22 Sep | (bolt to stackblitz) |
-| DEEMOS | £23.30/mo | *7342 | **YOUR CLICK** — Stripe portal → Manage subscriptions → Cancel | https://billing.stripe.com/p/login/bIY14V3G |
+| DEEMOS | £23.30/mo | *7342 | ✅ **CANCELLED** by owner 22 Sep | — |
 | ClickUp | unknown tier | — | VERIFY — cancel if paid | app.clickup.com → Settings → Billing |
 
 ## YELLOW — in motion
@@ -33,7 +33,7 @@
 
 ## SAVINGS SO FAR THIS WEEK
 - **~£50/mo + US$25/mo** in subscriptions cancelled (Cursor + X Premium + Bolt) — ≈ **£850/yr**
-- **DEEMOS £23.30/mo** awaiting your Stripe-portal click — another ≈ **£280/yr**
+- **DEEMOS £23.30/mo — CANCELLED 22 Sep** ≈ **£280/yr** recovered
 - **IONOS £485.40** disputed and uncollected — exiting entirely
 - **Total identified: ≈ £1,100+/yr** before DEEMOS, more after
 

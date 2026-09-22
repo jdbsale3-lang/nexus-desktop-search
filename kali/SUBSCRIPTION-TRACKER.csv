@@ -1,5 +1,5 @@
 provider,role,cost,billing,frequency,status,cancel_path,next_action
-DEEMOS,unknown dev tool,£23.30,Mastercard *7342,monthly,CANCELLING,failed-payments+acct_1OVTgmEX0ZvbLD9q@stripe.com | portal https://billing.stripe.com/p/login/bIY14V3G,Cancel via Stripe customer portal (Manage subscriptions -> cancel)
+DEEMOS,unknown dev tool,£23.30,Mastercard *7342,monthly,CANCELLED,-,cancelled by owner 22 Sep
 Cursor,AI code editor,£18.64,Mastercard *7342,monthly,CANCELLED,hi@cursor.com,confirmation email awaited (sent 22 Sep msg 1a0c8eea4eaa1139)
 X Premium,social verification,£8.00,Mastercard *7342,monthly,CANCELLED,paidfeatures@x.com,confirmation email awaited (sent 22 Sep msg 1a0c8ef30d87f4bc)
 Bolt.new/StackBlitz,web builder,US$25.00,card *8306,monthly,CANCELLED,hello@stackblitz.com,confirmation email awaited (sent 22 Sep)

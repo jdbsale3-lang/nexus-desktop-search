@@ -74,3 +74,22 @@ jobs:
       - name: Warn on transfer lock
         if: ${{ steps.rdap.outputs.locked == 'True' }}
         run: echo "::warning::Transfer lock still enabled at IONOS — disable at Domains & SSL → Renewal & transfer → Domain transfer lock"
+
+      - name: Notify Slack on completion (optional)
+        if: ${{ (steps.rdap.outputs.registrar != 'IONOS SE' && steps.rdap.outputs.registrar != 'UNRESOLVED' && steps.rdap.outputs.registrar != '') || steps.rdap.outputs.locked == 'True' }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          REGISTRAR: ${{ steps.rdap.outputs.registrar }}
+          LOCKED: ${{ steps.rdap.outputs.locked }}
+        run: |
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "::notice::SLACK_WEBHOOK_URL not set — skipping Slack notification (GitHub issue is the alert)"
+            exit 0
+          fi
+          if [ "$LOCKED" = "True" ]; then
+            TEXT="ZEUS ESTATE ⚠️ transfer lock still ON for zeusaiintelligence.com (registrar: $REGISTRAR) — disable at IONOS Renewal & transfer."
+          else
+            TEXT="ZEUS ESTATE ✅ TRANSFER COMPLETE — zeusaiintelligence.com now registered at $REGISTRAR. Run Phase 3 closeout: kali/IONOS-TRANSFER-CHECKLIST.md"
+          fi
+          curl -s -X POST -H 'Content-type: application/json' \
+            --data "{\"text\":\"$TEXT\"}" "$SLACK_WEBHOOK_URL" || echo "::warning::Slack webhook post failed"
